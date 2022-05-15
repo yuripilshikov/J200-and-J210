@@ -17,14 +17,12 @@ public class Client {
     public static List<Client> listOfClients;
     
     static {
-        listOfClients = new ArrayList<>();
-        Client c = new Client(0, "Router", "NetGear 123", "192.168.80.11");
-        c.addAddress(Address.listOfAddresses.get(0));
-        listOfClients.add(c);
-        listOfClients.add(new Client(0, "Server", "Synology", "192.168.80.12"));
-        listOfClients.add(new Client(0, "NAS", "XPEnology", "192.168.80.13"));
-        listOfClients.add(new Client(0, "Workstation", "Lenovo ThinkPad 123", "192.168.80.22"));
-        listOfClients.add(new Client(0, "NAS", "Apple TimeCapsule", "192.168.80.250"));                
+        listOfClients = new ArrayList<>();        
+        listOfClients.add(new Client(0, "Router", "NetGear 123", "192.168.80.11", new Address(0, "Санкт-Петербург", "Улица Ленина", 1, 2, 3, "Here be some text")));        
+        listOfClients.add(new Client(1, "NAS", "XPEnology", "192.168.80.13", new Address(0, "Москва", "Улица Ленина", 1, 2, 13, "Here be some text")));
+        listOfClients.add(new Client(2, "Workstation", "Lenovo ThinkPad 123", "192.168.80.22", new Address(0, "Мга", "Улица Правды", 1, 5, 2, "")));
+        listOfClients.add(new Client(3, "NAS", "Apple TimeCapsule", "192.168.80.250", new Address(0, "Воронеж", "улица Льва Толстого", 1, 2, 3, "")));
+        listOfClients.get(1).addAddress(new Address(9, "Пекин", "улица Конфуция", 1, 2, 3, ""));
     }
 
     public Client(int idClient, String type, String model, String ip) {
@@ -34,6 +32,13 @@ public class Client {
         this.ip = ip;
         this.addresses = new ArrayList<>();
     }
+
+    public Client(int idClient, String type, String model, String ip, Address address) {
+        this(idClient, type, model, ip);
+        this.addresses.add(address);
+    }
+    
+    
 
     public int getIdClient() {
         return idClient;
@@ -87,6 +92,7 @@ public class Client {
         Client client = new Client(idClient, type, model, ip);
         return client;
     }
+    
 
     public String getAddressListAsString() {
         if(this.addresses == null || this.addresses.isEmpty()) return "n/a";
@@ -96,4 +102,25 @@ public class Client {
         }
         return sb.toString();
     }
+    
+    public static Client getById(int id) {
+        for(Client c : listOfClients) {
+            if(c.getIdClient() == id) return c;
+        }
+        return null;
+    }
+    
+    public Address getAddressById(int id) {
+        for(Address a : addresses) {
+            if(a.getIdAddress() == id) return a;
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return idClient + ", " + type + " " + model + " " + ip;
+    }
+    
+    
 }
