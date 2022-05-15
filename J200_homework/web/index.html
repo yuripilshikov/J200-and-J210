@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Entry point</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>СОЗДАНИЕ ЗАПИСИ</h1>
+        <p>Создать нового клиента и новый адрес</p>        
+        <form action ="create" method="GET">         
+            <p>Ввод данных об адресе:</p>
+            <label for="city">Город </label><input type="text" name="city"/><br>
+            <label for="street">Улица </label><input type="text" name="street"/><br>
+            <label for="num">Дом </label><input type="number" name="num"/><br>
+            <label for="subnum">Корпус </label><input type="number" name="subnum"/><br>
+            <label for="flat">Квартира </label><input type="number" name="flat"/><br>
+            <label for="extra">Дополнительно </label><input type="text" name="extra"/><br>
+            <p>Ввод данных о клиенте:</p>
+            <label for="type">Тип </label><input type="text" name="type"/><br>
+            <label for="model">Модель </label><input type="text" name="model"/><br>
+            <label for="ip">IP </label><input type="text" name="ip"/><br>            
+            <input type="submit" value="CREATE"/>              
+        </form>
+        
+        <h1>Список адресов</h1>
+        <table border="1">
+            <tr>
+                <th>ID</th>
+                <th>Город</th>
+                <th>Улица</th>
+                <th>Номер дома</th>
+                <th>Номер корпуса</th>
+                <th>Номер квартиры</th>
+                <th>Дополнительно</th>
+                <th>Список устройств</th>                
+            </tr>
+            
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </body>
+</html>
