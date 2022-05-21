@@ -5,9 +5,7 @@
  */
 package beans;
 
-import java.util.List;
 import javax.ejb.Local;
-import javax.servlet.http.HttpServletRequest;
 import model.Client;
 
 /**
@@ -15,10 +13,6 @@ import model.Client;
  * @author YuriPilshikov
  */
 @Local
-public interface SelectBeanLocal {
-    List<Client> getAllClients();
-    Client getClient(HttpServletRequest request);
-    List<Client> filter(HttpServletRequest request);
-    
-    List<String> getAllCities();
+public interface RowBuilderBeanLocal {
+    String createRow(Client c);
 }

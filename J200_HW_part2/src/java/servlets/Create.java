@@ -3,8 +3,6 @@ package servlets;
 import beans.UpdateBeanLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
-import java.util.Objects;
 import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -12,8 +10,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.Address;
-import model.Client;
 
 /**
  *
@@ -25,8 +21,6 @@ public class Create extends HttpServlet {
     @EJB
     UpdateBeanLocal updateLB;
     
-    
-
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {              
         response.setContentType("text/html;charset=UTF-8");
@@ -54,6 +48,10 @@ public class Create extends HttpServlet {
             out.println("<label for=\"extra\">Дополнительно</label><input type=\"text\" name=\"extra\"/><br>\n");
             out.println("<input type=\"submit\" value=\"CREATE\"/> \n");
             out.println("</form>");
+            out.println("<br>");
+            out.println("<br>");
+            out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2/viewlist2\">Перейти к списку</a>");
             out.println("</body>");
             out.println("</html>");
         }

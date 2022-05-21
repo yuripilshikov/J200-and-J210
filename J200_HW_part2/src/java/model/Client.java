@@ -36,9 +36,7 @@ public class Client {
     public Client(int idClient, String type, String model, String ip, Address address) {
         this(idClient, type, model, ip);
         this.addresses.add(address);
-    }
-    
-    
+    }   
 
     public int getIdClient() {
         return idClient;
@@ -120,7 +118,5 @@ public class Client {
     @Override
     public String toString() {
         return idClient + ", " + type + " " + model + " " + ip;
-    }
-    
-    
+    }   
 }

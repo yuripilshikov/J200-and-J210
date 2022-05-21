@@ -1,7 +1,9 @@
 package servlets;
 
+import beans.UpdateBeanLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
+import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,6 +19,9 @@ import model.Client;
  */
 @WebServlet(name = "Delete", urlPatterns = {"/delete2"})
 public class Delete extends HttpServlet {
+    
+    @EJB
+    UpdateBeanLocal updateLB;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -38,8 +43,7 @@ public class Delete extends HttpServlet {
         }        
         Address a = c.getAddressById(aid);
         
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
+        try (PrintWriter out = response.getWriter()) {            
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
@@ -60,6 +64,8 @@ public class Delete extends HttpServlet {
             out.println("<input type=\"hidden\" name=\"addrId\"  value=\"" + a.getIdAddress() + "\" /><br>\n");            
             out.println("<input type=\"submit\" value=\"УДАЛИТЬ\"/> \n");
             out.println("</form>");
+            out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2/viewlist2\">Перейти к списку</a>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -73,45 +79,13 @@ public class Delete extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        if(delete(request)) {
+            throws ServletException, IOException {        
+        if(updateLB.deleteEntry(request)) {
             response.sendRedirect("http://localhost:26213/J200_HW_part2/viewlist2");
         } else {
             RequestDispatcher dispatcher = request.getRequestDispatcher("/error2");
             dispatcher.forward(request, response);
-        }
-        
+        }        
     }
 
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }
-
-    private boolean delete(HttpServletRequest request) {
-        int cid = 0;
-        try {
-            cid = Integer.parseInt(request.getParameter("cliId"));
-        } catch (NumberFormatException e) {
-            request.setAttribute("msgError", "Не могу получить ID клиента");
-            return false;
-        }        
-        Client c = Client.getById(cid);
-        
-        int aid = 0;
-        try {
-            aid = Integer.parseInt(request.getParameter("addrId"));
-        } catch (NumberFormatException e) {
-            request.setAttribute("msgError", "Не могу получить ID адреса");
-            return false;
-        }        
-        Address a = c.getAddressById(aid);
-        
-        c.getAddresses().remove(a);
-        if(c.getAddresses().isEmpty()) {
-            Client.listOfClients.remove(c);
-        }
-        return true;
-    }
 }

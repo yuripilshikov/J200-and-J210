@@ -1,8 +1,9 @@
 package servlets;
 
+import beans.UpdateBeanLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Objects;
+import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -18,6 +19,9 @@ import model.Client;
  */
 @WebServlet(name = "Update", urlPatterns = {"/update2"})
 public class Update extends HttpServlet {
+    
+    @EJB
+    UpdateBeanLocal updateLB;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -66,6 +70,8 @@ public class Update extends HttpServlet {
             out.println("<label for=\"extra\">Дополнительно</label><input type=\"text\" name=\"extra\" value=\"" + a.getExtra() + "\" /><br>\n");
             out.println("<input type=\"submit\" value=\"ВНЕСТИ ИЗМЕНЕНИЯ\"/> \n");
             out.println("</form>");
+            out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2/viewlist2\">Перейти к списку</a>");
             out.println("</body>");
             out.println("</html>");
             
@@ -85,7 +91,7 @@ public class Update extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         
         // set new values
-        if(modifyValues(request)) {
+        if(updateLB.updateEntry(request)) {
             response.sendRedirect("http://localhost:26213/J200_HW_part2/viewlist2");
         } else {
             RequestDispatcher dispatcher = request.getRequestDispatcher("/error2");
@@ -97,124 +103,4 @@ public class Update extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }
-
-    private boolean modifyValues(HttpServletRequest request) {        
-        Client c = Client.getById(Integer.parseInt(request.getParameter("cliId").trim()));
-        
-        
-        String type = Objects.toString(request.getParameter("type"), "").trim();
-        if(type.isEmpty()) {
-            request.setAttribute("msgError", "Тип не указан");
-            return false;
-        }
-        if(type.length() > 100) {
-            request.setAttribute("msgError", "Размер поля ТИП превышает допустимое значение (100)");
-            return false;
-        }        
-        if(type.replaceAll("[a-zA-Z0-9!-_ ]", "").length() > 0) {
-            request.setAttribute("msgError", "В поле ТИП допустимы только латинские символы и цифры");
-            return false;        
-        }
-        c.setType(type);
-        
-        String model = Objects.toString(request.getParameter("model"), "").trim();
-        if(model.isEmpty()) {
-            request.setAttribute("msgError", "Модель не указана");
-            return false;
-        }
-        if(model.length() > 100) {
-            request.setAttribute("msgError", "Размер поля МОДЕЛЬ превышает допустимое значение (100)");
-            return false;
-        }
-        if(model.replaceAll("[a-zA-Z0-9!-_ ]", "").length() > 0) {
-            request.setAttribute("msgError", "В поле ТИП допустимы только латинские символы и цифры");
-            return false;
-        }
-        c.setModel(model);
-        
-        String ip = Objects.toString(request.getParameter("ip"), "").trim();
-        if(ip.isEmpty()) {
-            request.setAttribute("msgError", "IP адрес не указан");
-            return false;
-        }
-        if(ip.length() > 25) {
-            request.setAttribute("msgError", "Размер поля IP АДРЕС превышает допустимое значение (25)");
-            return false;
-        }
-        String[] parts = ip.split("\\.");
-        if(parts.length != 4) {
-            request.setAttribute("msgError", "Некорректное значение IP адреса");
-            return false;
-        }        
-        for(String str : parts) {
-            try {
-                int i = Integer.parseInt(str);
-                if((i < 0) || (i > 255)) {
-                    request.setAttribute("msgError", "Некорректное значение IP адреса");
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                request.setAttribute("msgError", "Некорректное значение IP адреса");
-                return false;
-            }
-        }
-        c.setIp(ip);
-        
-        
-        Address a = c.getAddressById(Integer.parseInt(request.getParameter("addrId")));
-        
-        String city = Objects.toString(request.getParameter("city"), "").trim();
-        if(city.isEmpty()) {
-            request.setAttribute("msgError", "Город не указан");
-            return false;
-        }
-        a.setCity(city);
-        
-        String street = Objects.toString(request.getParameter("street"), "").trim();
-        if(street.isEmpty()) {
-            request.setAttribute("msgError", "Улица не указана");
-            return false;
-        }
-        a.setStreet(street);
-        
-        String numRaw = Objects.toString(request.getParameter("num"), "").trim();
-        if(numRaw.isEmpty()) {
-            request.setAttribute("msgError", "Номер дома не указан");
-            return false;
-        }
-        int num = 0;
-        try {
-            num = Integer.parseInt(numRaw);
-        } catch(NumberFormatException e) {
-            request.setAttribute("msgError", "Пожалуйста, указывайте номер дома цифрами");
-            return false;
-        }
-        a.setNum(num);
-        
-        String subNumRaw = Objects.toString(request.getParameter("subnum"), "").trim();
-        int subnum = 0;
-        try {
-            subnum = Integer.parseInt(subNumRaw);
-        } catch(NumberFormatException e) {
-            subnum = -1;
-        }
-        a.setSubnum(subnum);
-        
-        String flatRaw = Objects.toString(request.getParameter("flat"), "").trim();
-        int flat = 0;
-        try {
-            flat = Integer.parseInt(flatRaw);
-        } catch(NumberFormatException e) {
-            flat = -1;
-        }
-        a.setFlat(flat);
-
-        String extra = Objects.toString(request.getParameter("extra"), "").trim();
-        a.setExtra(extra);
-        return true;
-        
-    }
-    
-    
-    
 }

@@ -5,17 +5,17 @@
  */
 package servlets;
 
+import beans.UpdateBeanLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
-import java.util.Objects;
+import javax.ejb.EJB;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.Address;
 import model.Client;
 
 /**
@@ -24,6 +24,9 @@ import model.Client;
  */
 @WebServlet(name = "AddAddress", urlPatterns = {"/addaddress2"})
 public class AddAddress extends HttpServlet {
+    
+    @EJB
+    UpdateBeanLocal updateLB;
 
     private List<Client> clients;
 
@@ -57,9 +60,9 @@ public class AddAddress extends HttpServlet {
             out.println("<label for=\"flat\">Квартира</label><input type=\"number\" name=\"flat\"/><br>\n");
             out.println("<label for=\"extra\">Дополнительно</label><input type=\"text\" name=\"extra\"/><br>\n");
             out.println("<input type=\"submit\" value=\"ADD ADDRESS\"/> \n");
-
             out.println("</form>");
-
+            out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2/viewlist2\">Перейти к списку</a>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -67,20 +70,14 @@ public class AddAddress extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
+            throws ServletException, IOException {        
         request.setCharacterEncoding("UTF-8");
-
-        // process address
-        if (processAddressAndAdd(request)) {
+        if (updateLB.addAddress(request)) {
             response.sendRedirect("http://localhost:26213/J200_HW_part2/viewlist2");
         } else {
-            //processRequest(request, response);
             RequestDispatcher dispatcher = request.getRequestDispatcher("/error2");
             dispatcher.forward(request, response);
         }
-
-        //
     }
 
     @Override
@@ -90,83 +87,5 @@ public class AddAddress extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         processRequest(request, response);
-    }
-
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }
-
-    private boolean processAddressAndAdd(HttpServletRequest request) {
-        
-        // Most of parameters are checked in form. But, GET request can be written in the address field manually.
-        
-        int clientId = 0;
-        String clientIdRaw = Objects.toString(request.getParameter("clientToAddAddress"), "");        
-        if (clientIdRaw.length() > 0) {
-            clientId = Integer.parseInt(clientIdRaw);
-        } else {
-            request.setAttribute("msgError", "Не выбран клиент");
-            return false;
-        }
-        
-
-        Client c = Client.getById(clientId);
-        if(c == null) {
-            request.setAttribute("msgError", "Клиент не найден");
-            return false;
-        }
-
-        int id = 0;
-        for (Address a : c.getAddresses()) {
-            id = id >= a.getIdAddress() ? id : a.getIdAddress();
-        }
-        String city = Objects.toString(request.getParameter("city"), "").trim();
-        if(city.isEmpty()) {
-            request.setAttribute("msgError", "Город не указан");
-            return false;
-        }
-        
-        String street = Objects.toString(request.getParameter("street"), "").trim();
-        if(street.isEmpty()) {
-            request.setAttribute("msgError", "Улица не указана");
-            return false;
-        }
-        
-        String numRaw = Objects.toString(request.getParameter("num"), "").trim();
-        if(numRaw.isEmpty()) {
-            request.setAttribute("msgError", "Номер дома не указан");
-            return false;
-        }
-        int num = 0;
-        try {
-            num = Integer.parseInt(numRaw);
-        } catch(NumberFormatException e) {
-            request.setAttribute("msgError", "Пожалуйста, указывайте номер дома цифрами");
-            return false;
-        }
-        
-        String subNumRaw = Objects.toString(request.getParameter("subnum"), "").trim();
-        int subnum = 0;
-        try {
-            subnum = Integer.parseInt(subNumRaw);
-        } catch(NumberFormatException e) {
-            subnum = -1;
-        }
-        
-        String flatRaw = Objects.toString(request.getParameter("flat"), "").trim();
-        int flat = 0;
-        try {
-            flat = Integer.parseInt(flatRaw);
-        } catch(NumberFormatException e) {
-            flat = -1;
-        }
-
-        String extra = Objects.toString(request.getParameter("extra"), "").trim();
-
-        Address address = new Address(id + 1, city, street, num, subnum, flat, extra);
-        c.addAddress(address);
-
-        return true;
     }
 }

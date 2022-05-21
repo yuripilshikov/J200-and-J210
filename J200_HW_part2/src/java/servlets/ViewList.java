@@ -1,18 +1,17 @@
 package servlets;
 
+import beans.RowBuilderBeanLocal;
+import beans.SelectBeanLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.Address;
 import model.Client;
 
 /**
@@ -21,13 +20,17 @@ import model.Client;
  */
 @WebServlet(name = "ViewList", urlPatterns = {"/viewlist2"})
 public class ViewList extends HttpServlet {
-
-    private List<Client> clients;
+    
+    @EJB
+    SelectBeanLocal selectLocal;    
+    
+    @EJB
+    RowBuilderBeanLocal rowBuilder;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        this.clients = filter(request);
+        List<Client> clients = selectLocal.filter(request);
 
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
@@ -58,26 +61,29 @@ public class ViewList extends HttpServlet {
             out.println("<th>Примечание</th>\n");
             out.println("</tr>\n");
             for (Client c : clients) {
-                out.println(createRow(c));
+                out.println(rowBuilder.createRow(c));
             }
             out.println("</table>");
-
+            
             out.println("<form action =\"viewlist2\" method=\"GET\">\n");
             out.println("<h2>ФИЛЬТР</h2>\n");
-            //out.println("<label for=\"city\">Город: </label><input type=\"text\" name=\"city\" value=\"" + Objects.toString(request.getParameter("city"), "") + "\" /><br><br>\n");
             out.println("<label for=\"city\">Город: </label>");
             out.println("<select name=\"city\">");
-            List<String> allCities = getAllCities();
+            List<String> allCities = selectLocal.getAllCities();
             out.println("<option value=\"\"></option>");
             for (String s : allCities) {
                 out.println("<option value=\"" + s + "\">" + s + "</option>");
             }
             out.println("</select>");
-
             out.println("<label for=\"streetAndNum\">Улица и номер дома: </label><input type=\"text\" name=\"streetAndNum\" value=\"" + Objects.toString(request.getParameter("streetAndNum"), "") + "\" /><br><br>\n");
             out.println("<input type=\"submit\" value=\"ПРИМЕНИТЬ ФИЛЬТР\" /><br><br>\n");
             out.println("</form>\n");
-
+            out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2\">Вернуться к EntryPoint</a>");            
+            out.println("<h1>Diagnostics</h1>");
+            out.println("<p>");
+            out.println(clients.size());
+            out.println("</p>");                             
             out.println("</body>");
             out.println("</html>");
         }
@@ -104,107 +110,64 @@ public class ViewList extends HttpServlet {
         return "Short description";
     }
 
-    private String createRow(Client c) {
+//    private String createRow(Client c) {
 
-        String s = null;
-        int as = c.getAddresses().size();
-
-        if (as > 1) {
-            StringBuilder sb = new StringBuilder();
-            s = "<tr>\n" + "<td rowspan=\" " + as + "\">"
-                    + c.getIdClient() + "</td>\n"
-                    + "<td rowspan=\"" + as + "\">" + c.getType() + "</td>\n"
-                    + "<td rowspan=\"" + as + "\">" + c.getModel() + "</td>\n"
-                    + "<td rowspan=\"" + as + "\">" + c.getIp() + "</td>\n"
-                    + "<td>" + c.getAddresses().get(0).getIdAddress() + "</td>\n"
-                    + "<td>" + c.getAddresses().get(0).getCity() + "</td>\n"
-                    + "<td>" + c.getAddresses().get(0).getStreet() + "</td>\n"
-                    + "<td>" + c.getAddresses().get(0).getNum() + "</td>\n"
-                    + "<td>" + (c.getAddresses().get(0).getSubnum() < 0 ? "-" : c.getAddresses().get(0).getSubnum()) + "</td>\n"
-                    + "<td>" + (c.getAddresses().get(0).getFlat() < 0 ? "-" : c.getAddresses().get(0).getFlat()) + "</td>\n"
-                    + "<td>" + c.getAddresses().get(0).getExtra() + "</td>\n"
-                    + "<td><a href=\"http://localhost:26213/J200_HW_part2/update2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(0).getIdAddress() + "\">" + "Редактировать" + "</a>"
-                    + "<a href=\"http://localhost:26213/J200_HW_part2/delete2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(0).getIdAddress() + "\">" + "Удалить" + "</a>"
-                    + "</td>\n"
-                    + "</tr>\n";
-            sb.append(s);
-            for (int i = 1; i < as; i++) {
-                s = "<tr>"
-                        + "<td>" + c.getAddresses().get(i).getIdAddress() + "</td>\n"
-                        + "<td>" + c.getAddresses().get(i).getCity() + "</td>\n"
-                        + "<td>" + c.getAddresses().get(i).getStreet() + "</td>\n"
-                        + "<td>" + c.getAddresses().get(i).getNum() + "</td>\n"
-                        + "<td>" + (c.getAddresses().get(i).getSubnum() < 0 ? "-" : c.getAddresses().get(i).getSubnum()) + "</td>\n"
-                        + "<td>" + (c.getAddresses().get(i).getFlat() < 0 ? "-" : c.getAddresses().get(i).getFlat()) + "</td>\n"
-                        + "<td>" + c.getAddresses().get(i).getExtra() + "</td>\n"
-                        + "<td><a href=\"http://localhost:26213/J200_HW_part2/update2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(i).getIdAddress() + "\">" + "Редактировать" + "</a>"
-                        + "<a href=\"http://localhost:26213/J200_HW_part2/delete2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(i).getIdAddress() + "\">" + "Удалить" + "</a>"
-                        + "</td>\n"
-                        + "</tr>\n";
-                sb.append(s);
-            }
-            s = sb.toString();
-        } else {
-            s = "<tr>\n" + "<td>"
-                    + c.getIdClient() + "</td>\n"
-                    + "<td>" + c.getType() + "</td>\n"
-                    + "<td>" + c.getModel() + "</td>\n"
-                    + "<td>" + c.getIp() + "</td>\n"
-                    + "<td>" + c.getAddresses().get(0).getIdAddress() + "</td>\n"
-                    + "<td>" + c.getAddresses().get(0).getCity() + "</td>\n"
-                    + "<td>" + c.getAddresses().get(0).getStreet() + "</td>\n"
-                    + "<td>" + c.getAddresses().get(0).getNum() + "</td>\n"
-                    + "<td>" + (c.getAddresses().get(0).getSubnum() < 0 ? "" : c.getAddresses().get(0).getSubnum()) + "</td>\n"
-                    + "<td>" + (c.getAddresses().get(0).getFlat() < 0 ? "" : c.getAddresses().get(0).getFlat()) + "</td>\n"
-                    + "<td>" + c.getAddresses().get(0).getExtra() + "</td>\n"
-                    + "<td><a href=\"http://localhost:26213/J200_HW_part2/update2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(0).getIdAddress() + "\">" + "Редактировать" + "</a>"
-                    + "<a href=\"http://localhost:26213/J200_HW_part2/delete2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(0).getIdAddress() + "\">" + "Удалить" + "</a>"
-                    + "</td>\n"
-                    + "</tr>\n";
-        }
-        return s;
-    }
-
-    private List<Client> filter(HttpServletRequest request) {
-        List<Client> clients = Client.listOfClients;
-        String city = Objects.toString(request.getParameter("city"), "").trim();
-        String streetAndNum = Objects.toString(request.getParameter("streetAndNum"), "").trim();
-        String[] tempAddress = streetAndNum.split("\\s");
-        String street = Objects.toString(tempAddress[0], "");
-        int num = -1;
-        if (tempAddress.length == 2) {
-            try {
-                num = Integer.parseInt(tempAddress[1]);
-            } catch (NumberFormatException e) {
-                num = -1;
-            }
-        }
-        List<Client> tempClients = new LinkedList<>();
-        for (Client c : clients) {
-            List<Address> addresses = c.getAddresses();
-            for (Address a : addresses) {
-                if(!a.getCity().toLowerCase().contains(city.toLowerCase())) continue;
-                if(!a.getStreet().toLowerCase().contains(street.toLowerCase())) continue;
-                if(num > 0 && a.getNum() != num) continue;
-                tempClients.add(c);
-            }
-        }    
-        if(!tempClients.isEmpty()) clients = new ArrayList<>(tempClients);
-        return clients;
-    }
-
-    private List<String> getAllCities() {
-        List<String> allCities = new ArrayList<>();
-        List<Client> clients = Client.listOfClients;
-        for (Client c : clients) {
-            List<Address> addresses = c.getAddresses();
-            for (Address a : addresses) {
-                String s = a.getCity();
-                allCities.add(s);
-            }
-        }
-        Collections.sort(allCities);
-        return allCities;
-    }
-
+//        String s = null;
+//        int as = c.getAddresses().size();
+//
+//        if (as > 1) {
+//            StringBuilder sb = new StringBuilder();
+//            s = "<tr>\n" + "<td rowspan=\" " + as + "\">"
+//                    + c.getIdClient() + "</td>\n"
+//                    + "<td rowspan=\"" + as + "\">" + c.getType() + "</td>\n"
+//                    + "<td rowspan=\"" + as + "\">" + c.getModel() + "</td>\n"
+//                    + "<td rowspan=\"" + as + "\">" + c.getIp() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(0).getIdAddress() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(0).getCity() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(0).getStreet() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(0).getNum() + "</td>\n"
+//                    + "<td>" + (c.getAddresses().get(0).getSubnum() < 0 ? "-" : c.getAddresses().get(0).getSubnum()) + "</td>\n"
+//                    + "<td>" + (c.getAddresses().get(0).getFlat() < 0 ? "-" : c.getAddresses().get(0).getFlat()) + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(0).getExtra() + "</td>\n"
+//                    + "<td><a href=\"http://localhost:26213/J200_HW_part2/update2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(0).getIdAddress() + "\">" + "Редактировать" + "</a>"
+//                    + "<a href=\"http://localhost:26213/J200_HW_part2/delete2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(0).getIdAddress() + "\">" + "Удалить" + "</a>"
+//                    + "</td>\n"
+//                    + "</tr>\n";
+//            sb.append(s);
+//            for (int i = 1; i < as; i++) {
+//                s = "<tr>"
+//                    + "<td>" + c.getAddresses().get(i).getIdAddress() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(i).getCity() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(i).getStreet() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(i).getNum() + "</td>\n"
+//                    + "<td>" + (c.getAddresses().get(i).getSubnum() < 0 ? "-" : c.getAddresses().get(i).getSubnum()) + "</td>\n"
+//                    + "<td>" + (c.getAddresses().get(i).getFlat() < 0 ? "-" : c.getAddresses().get(i).getFlat()) + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(i).getExtra() + "</td>\n"
+//                    + "<td><a href=\"http://localhost:26213/J200_HW_part2/update2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(i).getIdAddress() + "\">" + "Редактировать" + "</a>"
+//                    + "<a href=\"http://localhost:26213/J200_HW_part2/delete2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(i).getIdAddress() + "\">" + "Удалить" + "</a>"
+//                    + "</td>\n"
+//                    + "</tr>\n";
+//                sb.append(s);
+//            }
+//            s = sb.toString();
+//        } else {
+//            s = "<tr>\n" + "<td>"
+//                    + c.getIdClient() + "</td>\n"
+//                    + "<td>" + c.getType() + "</td>\n"
+//                    + "<td>" + c.getModel() + "</td>\n"
+//                    + "<td>" + c.getIp() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(0).getIdAddress() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(0).getCity() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(0).getStreet() + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(0).getNum() + "</td>\n"
+//                    + "<td>" + (c.getAddresses().get(0).getSubnum() < 0 ? "" : c.getAddresses().get(0).getSubnum()) + "</td>\n"
+//                    + "<td>" + (c.getAddresses().get(0).getFlat() < 0 ? "" : c.getAddresses().get(0).getFlat()) + "</td>\n"
+//                    + "<td>" + c.getAddresses().get(0).getExtra() + "</td>\n"
+//                    + "<td><a href=\"http://localhost:26213/J200_HW_part2/update2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(0).getIdAddress() + "\">" + "Редактировать" + "</a>"
+//                    + "<a href=\"http://localhost:26213/J200_HW_part2/delete2?cid=" + c.getIdClient() + "&aid=" + c.getAddresses().get(0).getIdAddress() + "\">" + "Удалить" + "</a>"
+//                    + "</td>\n"
+//                    + "</tr>\n";
+//        }
+//        return s;
+//    }
 }
