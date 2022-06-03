@@ -5,15 +5,17 @@
  */
 package beans;
 
+import beans.repo.DbManagerLocal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
-import model.Address;
-import model.Client;
+import entity.Address;
+import entity.Client;
+import java.util.LinkedList;
 
 /**
  *
@@ -22,20 +24,22 @@ import model.Client;
 @Stateless
 public class SelectBean implements SelectBeanLocal {
 
+    @EJB
+    DbManagerLocal dbm;
+
     @Override
     public List<Client> getAllClients() {
-        // this is simple...
-        return Client.listOfClients;
+        return dbm.getAllClients();
+    }
+
+    public List<Address> getAllAddresses() {
+        return dbm.getAllAddresses();
     }
 
     @Override
-    public Client getClient(HttpServletRequest request) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<Client> filter(HttpServletRequest request) {
-        List<Client> clients = getAllClients();
+    public List<Address> filter(HttpServletRequest request) {
+        //List<Client> clients = getAllClients();
+        List<Address> addresses = getAllAddresses();
         String city = Objects.toString(request.getParameter("city"), "").trim();
         String streetAndNum = Objects.toString(request.getParameter("streetAndNum"), "").trim();
         String[] tempAddress = streetAndNum.split("\\s");
@@ -48,42 +52,33 @@ public class SelectBean implements SelectBeanLocal {
                 num = -1;
             }
         }
-        List<Client> tempClients = new LinkedList<>();
-        for (Client c : clients) {
-            List<Address> addresses = c.getAddresses();
-            boolean found = false;
-            for (Address a : addresses) {
-                if (!a.getCity().toLowerCase().contains(city.toLowerCase())) {
-                    continue;
-                }
-                if (!a.getStreet().toLowerCase().contains(street.toLowerCase())) {
-                    continue;
-                }
-                if (num > 0 && a.getNum() != num) {
-                    continue;
-                }
-                found = true;
+
+        List<Address> tempAddresses = new LinkedList<>();
+        for (Address a : addresses) {
+            if (!a.getCity().toLowerCase().contains(city.toLowerCase())) {
+                continue;
             }
-            if (found) {
-                tempClients.add(c);
+            if (!a.getStreet().toLowerCase().contains(street.toLowerCase())) {
+                continue;
             }
+            if (num > 0 && a.getNum() != num) {
+                continue;
+            }
+            tempAddresses.add(a);
+
         }
-        if (!tempClients.isEmpty()) {
-            clients = new ArrayList<>(tempClients);
-        }
-        return clients;
+        addresses = new ArrayList<>(tempAddresses);
+        return tempAddresses;
+
     }
 
     @Override
     public List<String> getAllCities() {
         List<String> allCities = new ArrayList<>();
-        List<Client> clients = getAllClients();
-        for (Client c : clients) {
-            List<Address> addresses = c.getAddresses();
-            for (Address a : addresses) {
-                String s = a.getCity();
-                allCities.add(s);
-            }
+        List<Address> addresses = getAllAddresses();
+        for (Address a : addresses) {
+            String s = a.getCity();
+            allCities.add(s);
         }
         Collections.sort(allCities);
         return allCities;

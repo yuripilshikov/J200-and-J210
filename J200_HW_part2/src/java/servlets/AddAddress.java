@@ -6,6 +6,8 @@
 package servlets;
 
 import beans.UpdateBeanLocal;
+import beans.repo.DbManagerLocal;
+import entity.Address;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -16,7 +18,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.Client;
+import entity.Client;
 
 /**
  *
@@ -27,17 +29,16 @@ public class AddAddress extends HttpServlet {
     
     @EJB
     UpdateBeanLocal updateLB;
-
-    private List<Client> clients;
+    
+    @EJB
+    DbManagerLocal dbm;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
         response.setContentType("text/html;charset=UTF-8");
-
-        this.clients = Client.listOfClients;
-
+        List<Address> addresses = dbm.getAllAddresses();
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
@@ -48,8 +49,8 @@ public class AddAddress extends HttpServlet {
             out.println("<form action =\"addaddress2\" method=\"GET\">\n");
             out.println("<p>Ввод данных об адресе:</p>\n");
             out.println("<select name=\"clientToAddAddress\" required>");
-            for (Client c : clients) {
-                out.println("<option value=\"" + c.getIdClient() + "\">" + c.getModel() + " " + c.getIp() + "</option>");
+            for (Address a : addresses) {
+                out.println("<option value=\"" + a.getDevice().getIdclient()+ "\">" +a.getDevice().getModel() + " " + a.getDevice().getType() + " " + a.getDevice().getIp() + "</option>");
             }
             out.println("</select>\n");
             out.println("<br>\n");
@@ -85,7 +86,6 @@ public class AddAddress extends HttpServlet {
             throws ServletException, IOException {
         
         request.setCharacterEncoding("UTF-8");
-
         processRequest(request, response);
     }
 }
