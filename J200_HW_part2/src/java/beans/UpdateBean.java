@@ -1,142 +1,82 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package beans;
 
+import beans.repo.DbManagerLocal;
 import java.util.Objects;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
-import model.Address;
-import model.Client;
+import entity.Address;
+import entity.Client;
 
-/**
- *
- * @author YuriPilshikov
- */
 @Stateless
 public class UpdateBean implements UpdateBeanLocal {
     
+    @EJB
+    ValidationBeanLocal validate;
+    
+    @EJB
+    DbManagerLocal dbm;
+    
+    
     @Override
-    public boolean addEntry(HttpServletRequest request) {      
-        int cId = 0;
-        for(Client c : Client.listOfClients) {
-            cId = cId >= c.getIdClient() ? cId : c.getIdClient();
-        }
+    public boolean addEntry(HttpServletRequest request) {
         
         String type = Objects.toString(request.getParameter("type"), "").trim();
-        if(type.isEmpty()) {
-            request.setAttribute("msgError", "Тип не указан");
-            return false;
-        }
-        if(type.length() > 100) {
-            request.setAttribute("msgError", "Размер поля ТИП превышает допустимое значение (100)");
-            return false;
-        }        
-        if(type.replaceAll("[a-zA-Z0-9!-_ ]", "").length() > 0) {
-            request.setAttribute("msgError", "В поле ТИП допустимы только латинские символы и цифры");
-            return false;
-        }
-        
         String model = Objects.toString(request.getParameter("model"), "").trim();
-        if(model.isEmpty()) {
-            request.setAttribute("msgError", "Модель не указана");
-            return false;
-        }
-        if(model.length() > 100) {
-            request.setAttribute("msgError", "Размер поля МОДЕЛЬ превышает допустимое значение (100)");
-            return false;
-        }
-        if(model.replaceAll("[a-zA-Z0-9!-_ ]", "").length() > 0) {
-            request.setAttribute("msgError", "В поле ТИП допустимы только латинские символы и цифры");
-            return false;
-        }
-        
         String ip = Objects.toString(request.getParameter("ip"), "").trim();
-        if(ip.isEmpty()) {
-            request.setAttribute("msgError", "IP адрес не указан");
-            return false;
-        }
-        if(ip.length() > 25) {
-            request.setAttribute("msgError", "Размер поля IP АДРЕС превышает допустимое значение (25)");
-            return false;
-        }
-        String[] parts = ip.split("\\.");
-        if(parts.length != 4) {
-            request.setAttribute("msgError", "Некорректное значение IP адреса");
-            return false;
-        }        
-        for(String str : parts) {
-            try {
-                int i = Integer.parseInt(str);
-                if((i < 0) || (i > 255)) {
-                    request.setAttribute("msgError", "Некорректное значение IP адреса");
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                request.setAttribute("msgError", "Некорректное значение IP адреса");
-                return false;
-            }
-        }
         
-        Client c = new Client(cId + 1, type, model, ip);
-        
-        int aId = 0;        
         String city = Objects.toString(request.getParameter("city"), "").trim();
-        if(city.isEmpty()) {
-            request.setAttribute("msgError", "Город не указан");
-            return false;
-        }
-        
         String street = Objects.toString(request.getParameter("street"), "").trim();
-        if(street.isEmpty()) {
-            request.setAttribute("msgError", "Улица не указана");
-            return false;
-        }
-        
         String numRaw = Objects.toString(request.getParameter("num"), "").trim();
-        if(numRaw.isEmpty()) {
-            request.setAttribute("msgError", "Номер дома не указан");
-            return false;
-        }
-        int num = 0;
-        try {
-            num = Integer.parseInt(numRaw);
-        } catch(NumberFormatException e) {
-            request.setAttribute("msgError", "Пожалуйста, указывайте номер дома цифрами");
-            return false;
-        }
-        
         String subNumRaw = Objects.toString(request.getParameter("subnum"), "").trim();
+        String flatRaw = Objects.toString(request.getParameter("flat"), "").trim();
+        String extra = Objects.toString(request.getParameter("extra"), "").trim();         
+        
+        boolean testClient = validate.checkClientFields(request, type, model, ip);
+        boolean testAddress = validate.checkAddressFields(request, city, street, numRaw);
+        
+        if(!testClient || !testAddress) return false;
+                
+        int num = Integer.parseInt(numRaw);                
+        
         int subnum = 0;
         try {
             subnum = Integer.parseInt(subNumRaw);
         } catch(NumberFormatException e) {
             subnum = -1;
-        }
+        }        
         
-        String flatRaw = Objects.toString(request.getParameter("flat"), "").trim();
         int flat = 0;
         try {
             flat = Integer.parseInt(flatRaw);
         } catch(NumberFormatException e) {
             flat = -1;
         }
-
-        String extra = Objects.toString(request.getParameter("extra"), "").trim();        
-        Address address = new Address(aId + 1, city, street, num, subnum, flat, extra);        
-        c.addAddress(address);        
-        Client.listOfClients.add(c);        
+        
+        Client c = new Client();
+        c.setModel(model);
+        c.setType(type);
+        c.setIp(ip);
+        dbm.persistClient(c);         
+        
+        Address a = new Address();
+        a.setCity(city);
+        a.setExtra(extra);
+        a.setFlat(flat);
+        a.setNum(num);
+        a.setStreet(street);
+        a.setDevice(c);
+        dbm.persistAddress(a);
+      
         return true;
     }
 
     @Override
     public boolean addAddress(HttpServletRequest request) {
-        // Most of parameters are checked in form. But, GET request can be written in the address field manually.
         
         int clientId = 0;
-        String clientIdRaw = Objects.toString(request.getParameter("clientToAddAddress"), "");        
+        String clientIdRaw = Objects.toString(request.getParameter("clientToAddAddress"), "");  
+        
         if (clientIdRaw.length() > 0) {
             clientId = Integer.parseInt(clientIdRaw);
         } else {
@@ -144,51 +84,25 @@ public class UpdateBean implements UpdateBeanLocal {
             return false;
         }
         
-
-        Client c = Client.getById(clientId);
-        if(c == null) {
-            request.setAttribute("msgError", "Клиент не найден");
-            return false;
-        }
-
-        int id = 0;
-        for (Address a : c.getAddresses()) {
-            id = id >= a.getIdAddress() ? id : a.getIdAddress();
-        }
         String city = Objects.toString(request.getParameter("city"), "").trim();
-        if(city.isEmpty()) {
-            request.setAttribute("msgError", "Город не указан");
-            return false;
-        }
-        
-        String street = Objects.toString(request.getParameter("street"), "").trim();
-        if(street.isEmpty()) {
-            request.setAttribute("msgError", "Улица не указана");
-            return false;
-        }
-        
+        String street = Objects.toString(request.getParameter("street"), "").trim();        
         String numRaw = Objects.toString(request.getParameter("num"), "").trim();
-        if(numRaw.isEmpty()) {
-            request.setAttribute("msgError", "Номер дома не указан");
-            return false;
-        }
-        int num = 0;
-        try {
-            num = Integer.parseInt(numRaw);
-        } catch(NumberFormatException e) {
-            request.setAttribute("msgError", "Пожалуйста, указывайте номер дома цифрами");
-            return false;
-        }
-        
         String subNumRaw = Objects.toString(request.getParameter("subnum"), "").trim();
+        String flatRaw = Objects.toString(request.getParameter("flat"), "").trim();
+        String extra = Objects.toString(request.getParameter("extra"), "").trim();
+        
+        boolean testAddress = validate.checkAddressFields(request, city, street, numRaw);
+        if(!testAddress) return false;
+        
+        int num = Integer.parseInt(numRaw);                
+        
         int subnum = 0;
         try {
             subnum = Integer.parseInt(subNumRaw);
         } catch(NumberFormatException e) {
             subnum = -1;
-        }
+        }        
         
-        String flatRaw = Objects.toString(request.getParameter("flat"), "").trim();
         int flat = 0;
         try {
             flat = Integer.parseInt(flatRaw);
@@ -196,128 +110,79 @@ public class UpdateBean implements UpdateBeanLocal {
             flat = -1;
         }
 
-        String extra = Objects.toString(request.getParameter("extra"), "").trim();
+        Client c = dbm.getClientByID(clientId);
 
-        Address address = new Address(id + 1, city, street, num, subnum, flat, extra);
-        c.addAddress(address);
+        Address a = new Address();
+        a.setCity(city);
+        a.setExtra(extra);
+        a.setFlat(flat);
+        a.setNum(num);
+        a.setSubnum(subnum);
+        a.setStreet(street);
+        a.setDevice(c);
+        dbm.persistAddress(a);
 
         return true;
     }
 
     @Override
     public boolean updateEntry(HttpServletRequest request) {
-        Client c = Client.getById(Integer.parseInt(request.getParameter("cliId").trim()));
-        
-        
+        int clientId = Integer.parseInt(request.getParameter("cliId").trim());
+        Client c = dbm.getClientByID(clientId);
+         
         String type = Objects.toString(request.getParameter("type"), "").trim();
-        if(type.isEmpty()) {
-            request.setAttribute("msgError", "Тип не указан");
-            return false;
-        }
-        if(type.length() > 100) {
-            request.setAttribute("msgError", "Размер поля ТИП превышает допустимое значение (100)");
-            return false;
-        }        
-        if(type.replaceAll("[a-zA-Z0-9!-_ ]", "").length() > 0) {
-            request.setAttribute("msgError", "В поле ТИП допустимы только латинские символы и цифры");
-            return false;        
-        }
-        c.setType(type);
-        
         String model = Objects.toString(request.getParameter("model"), "").trim();
-        if(model.isEmpty()) {
-            request.setAttribute("msgError", "Модель не указана");
-            return false;
-        }
-        if(model.length() > 100) {
-            request.setAttribute("msgError", "Размер поля МОДЕЛЬ превышает допустимое значение (100)");
-            return false;
-        }
-        if(model.replaceAll("[a-zA-Z0-9!-_ ]", "").length() > 0) {
-            request.setAttribute("msgError", "В поле ТИП допустимы только латинские символы и цифры");
-            return false;
-        }
-        c.setModel(model);
-        
         String ip = Objects.toString(request.getParameter("ip"), "").trim();
-        if(ip.isEmpty()) {
-            request.setAttribute("msgError", "IP адрес не указан");
-            return false;
-        }
-        if(ip.length() > 25) {
-            request.setAttribute("msgError", "Размер поля IP АДРЕС превышает допустимое значение (25)");
-            return false;
-        }
-        String[] parts = ip.split("\\.");
-        if(parts.length != 4) {
-            request.setAttribute("msgError", "Некорректное значение IP адреса");
-            return false;
-        }        
-        for(String str : parts) {
-            try {
-                int i = Integer.parseInt(str);
-                if((i < 0) || (i > 255)) {
-                    request.setAttribute("msgError", "Некорректное значение IP адреса");
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                request.setAttribute("msgError", "Некорректное значение IP адреса");
-                return false;
-            }
-        }
-        c.setIp(ip);
-        
-        
-        Address a = c.getAddressById(Integer.parseInt(request.getParameter("addrId")));
-        
         String city = Objects.toString(request.getParameter("city"), "").trim();
-        if(city.isEmpty()) {
-            request.setAttribute("msgError", "Город не указан");
-            return false;
-        }
-        a.setCity(city);
-        
         String street = Objects.toString(request.getParameter("street"), "").trim();
-        if(street.isEmpty()) {
-            request.setAttribute("msgError", "Улица не указана");
-            return false;
-        }
-        a.setStreet(street);
-        
         String numRaw = Objects.toString(request.getParameter("num"), "").trim();
-        if(numRaw.isEmpty()) {
-            request.setAttribute("msgError", "Номер дома не указан");
-            return false;
-        }
+        String subNumRaw = Objects.toString(request.getParameter("subnum"), "").trim();
+        String flatRaw = Objects.toString(request.getParameter("flat"), "").trim();        
+        String extra = Objects.toString(request.getParameter("extra"), "").trim();
+        
+        boolean testClient = validate.checkClientFields(request, type, model, ip);
+        boolean testAddress = validate.checkAddressFields(request, city, street, numRaw);
+        
+        if(!testClient || !testAddress) return false;
+        
         int num = 0;
         try {
             num = Integer.parseInt(numRaw);
         } catch(NumberFormatException e) {
             request.setAttribute("msgError", "Пожалуйста, указывайте номер дома цифрами");
             return false;
-        }
-        a.setNum(num);
+        }        
         
-        String subNumRaw = Objects.toString(request.getParameter("subnum"), "").trim();
         int subnum = 0;
         try {
             subnum = Integer.parseInt(subNumRaw);
         } catch(NumberFormatException e) {
             subnum = -1;
-        }
-        a.setSubnum(subnum);
+        }              
         
-        String flatRaw = Objects.toString(request.getParameter("flat"), "").trim();
         int flat = 0;
         try {
             flat = Integer.parseInt(flatRaw);
         } catch(NumberFormatException e) {
             flat = -1;
         }
-        a.setFlat(flat);
-
-        String extra = Objects.toString(request.getParameter("extra"), "").trim();
+        
+        c.setModel(model);
+        c.setType(type);
+        c.setIp(ip);
+        dbm.persistClient(c);
+        
+        Address a = dbm.getAddressByID(Integer.parseInt(request.getParameter("addrId")));
+                
+        a.setCity(city);        
+        a.setStreet(street);
+        a.setNum(num);
+        a.setSubnum(subnum);  
+        a.setFlat(flat);        
         a.setExtra(extra);
+        a.setDevice(c);
+        dbm.persistAddress(a);
+        
         return true;
     }
 
@@ -330,7 +195,8 @@ public class UpdateBean implements UpdateBeanLocal {
             request.setAttribute("msgError", "Не могу получить ID клиента");
             return false;
         }        
-        Client c = Client.getById(cid);
+        Client c = dbm.getClientByID(cid);
+//        Client c = Client.getById(cid);
         
         int aid = 0;
         try {
@@ -339,12 +205,18 @@ public class UpdateBean implements UpdateBeanLocal {
             request.setAttribute("msgError", "Не могу получить ID адреса");
             return false;
         }        
-        Address a = c.getAddressById(aid);
+        Address a = dbm.getAddressByID(aid);
+//        Address a = c.getAddressById(aid);
         
-        c.getAddresses().remove(a);
-        if(c.getAddresses().isEmpty()) {
-            Client.listOfClients.remove(c);
+        dbm.deleteAddress(a);
+        if(c.getAddressList().isEmpty()) {
+            dbm.deleteClient(c);
         }
+
+//        c.getAddresses().remove(a);
+//        if(c.getAddresses().isEmpty()) {
+//            Client.listOfClients.remove(c);
+//        }
         return true;
     }
 }

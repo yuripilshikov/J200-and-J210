@@ -1,6 +1,7 @@
 package servlets;
 
 import beans.UpdateBeanLocal;
+import beans.repo.DbManagerLocal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.ejb.EJB;
@@ -10,8 +11,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.Address;
-import model.Client;
+import entity.Address;
+import entity.Client;
 
 /**
  *
@@ -22,6 +23,9 @@ public class Delete extends HttpServlet {
     
     @EJB
     UpdateBeanLocal updateLB;
+    
+    @EJB
+    DbManagerLocal dbm;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -33,7 +37,8 @@ public class Delete extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendRedirect("http://localhost:26213/J200_HW_part2/viewlist2");
         }        
-        Client c = Client.getById(cid);
+        //Client c = Client.getById(cid);
+        Client c = dbm.getClientByID(cid);
         
         int aid = 0;
         try {
@@ -41,7 +46,8 @@ public class Delete extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendRedirect("http://localhost:26213/J200_HW_part2/viewlist2");
         }        
-        Address a = c.getAddressById(aid);
+        //Address a = c.getAddressById(aid);
+        Address a = dbm.getAddressByID(aid);
         
         try (PrintWriter out = response.getWriter()) {            
             out.println("<!DOCTYPE html>");
@@ -56,12 +62,12 @@ public class Delete extends HttpServlet {
             out.println("<p>" + a.toString() + "</p>\n");
             out.println("<p>у следующего клиента:</p>\n");
             out.println("<p>" + c.toString() + "</p>\n");            
-            if(c.getAddresses().size() == 1) {
+            if(c.getAddressList().size() == 1) {
                 out.println("<p style=\"color:red\">сам клиент также будет удалён</p>\n");
             }           
             out.println("<p>ПОДТВЕРДИТЕ УДАЛЕНИЕ</p>\n");
-            out.println("<input type=\"hidden\" name=\"cliId\"  value=\"" + c.getIdClient() + "\" /><br>\n");            
-            out.println("<input type=\"hidden\" name=\"addrId\"  value=\"" + a.getIdAddress() + "\" /><br>\n");            
+            out.println("<input type=\"hidden\" name=\"cliId\"  value=\"" + c.getIdclient() + "\" /><br>\n");            
+            out.println("<input type=\"hidden\" name=\"addrId\"  value=\"" + a.getIdaddress() + "\" /><br>\n");            
             out.println("<input type=\"submit\" value=\"УДАЛИТЬ\"/> \n");
             out.println("</form>");
             out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
