@@ -35,7 +35,7 @@ public class Delete extends HttpServlet {
         try {
             cid = Integer.parseInt(request.getParameter("cid"));
         } catch (NumberFormatException e) {
-            response.sendRedirect("http://localhost:26213/J200_HW_part2/viewlist2");
+            response.sendRedirect("http://localhost:26213/J200_HW_part2/");
         }        
         //Client c = Client.getById(cid);
         Client c = dbm.getClientByID(cid);
@@ -44,7 +44,7 @@ public class Delete extends HttpServlet {
         try {
             aid = Integer.parseInt(request.getParameter("aid"));
         } catch (NumberFormatException e) {
-            response.sendRedirect("http://localhost:26213/J200_HW_part2/viewlist2");
+            response.sendRedirect("http://localhost:26213/J200_HW_part2/");
         }        
         //Address a = c.getAddressById(aid);
         Address a = dbm.getAddressByID(aid);
@@ -59,9 +59,9 @@ public class Delete extends HttpServlet {
             out.println("<h1>РЕДАКТИРОВАНИЕ ЗАПИСИ</h1>\n");
             out.println("<form action =\"delete2\" method=\"POST\">\n");            
             out.println("<p>Будет удалён следующий адрес:</p>\n");
-            out.println("<p>" + a.toString() + "</p>\n");
+            out.println("<p>" + a.getCity() + ", ул. " + a.getStreet() + ", д. " + a.getNum() + " корп. " + a.getSubnum() + " кв. " + a.getFlat() + "</p>\n");
             out.println("<p>у следующего клиента:</p>\n");
-            out.println("<p>" + c.toString() + "</p>\n");            
+            out.println("<p>" + c.getType() + " " + c.getModel() + " at " + c.getIp() + "</p>\n");            
             if(c.getAddressList().size() == 1) {
                 out.println("<p style=\"color:red\">сам клиент также будет удалён</p>\n");
             }           
@@ -71,7 +71,7 @@ public class Delete extends HttpServlet {
             out.println("<input type=\"submit\" value=\"УДАЛИТЬ\"/> \n");
             out.println("</form>");
             out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
-            out.println("<a href=\"http://localhost:26213/J200_HW_part2/viewlist2\">Перейти к списку</a>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2/\">Перейти к списку</a>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -87,7 +87,7 @@ public class Delete extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {        
         if(updateLB.deleteEntry(request)) {
-            response.sendRedirect("http://localhost:26213/J200_HW_part2/viewlist2");
+            response.sendRedirect("http://localhost:26213/J200_HW_part2/");
         } else {
             RequestDispatcher dispatcher = request.getRequestDispatcher("/error2");
             dispatcher.forward(request, response);

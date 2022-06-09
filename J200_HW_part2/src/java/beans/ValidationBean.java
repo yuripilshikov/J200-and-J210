@@ -21,10 +21,10 @@ public class ValidationBean implements ValidationBeanLocal {
             return "Тип не указан";
         }
         if (type.length() > 100) {
-            return "";
+            return "Длина превышает 100 символов";
         }
         if (type.replaceAll("[a-zA-Z0-9!-_ ]", "").length() > 0) {
-            return "";
+            return "Только латиница";
         }
         return "";
     }
@@ -103,12 +103,14 @@ public class ValidationBean implements ValidationBeanLocal {
         
         String validateResult = checkClientType(type);
         if(!validateResult.isEmpty()) {            
+            request.setAttribute("msgError", validateResult);
             request.setAttribute("typeValErrMsg", validateResult);
             checkResult = false;
         }        
         
         validateResult = checkClientModel(model);
         if(!validateResult.isEmpty()) {            
+            request.setAttribute("msgError", validateResult);
             request.setAttribute("modelValErrMsg", validateResult);
             checkResult = false;
         }        

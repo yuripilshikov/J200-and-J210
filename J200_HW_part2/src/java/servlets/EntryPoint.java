@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author YuriPilshikov
  */
-@WebServlet(name = "EntryPoint", urlPatterns = {"/*"})
+@WebServlet(name = "EntryPoint", urlPatterns = {"/test"})
 public class EntryPoint extends HttpServlet {
 
     @Override

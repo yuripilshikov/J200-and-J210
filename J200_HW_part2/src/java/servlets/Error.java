@@ -40,7 +40,7 @@ public class Error extends HttpServlet {
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Ошибка!!!    " + request.getAttribute("msgError") + "</h1>");
-            out.println("<a href=\"http://localhost:26213/J200_HW_part2\">Вернуться к точке входа</a>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2/\">Вернуться к таблице</a>");
             out.println("</body>");
             out.println("</html>");
         }

@@ -59,7 +59,7 @@ public class Create extends HttpServlet {
             out.println("<br>");
             out.println("<br>");
             out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
-            out.println("<a href=\"http://localhost:26213/J200_HW_part2/viewlist2\">Перейти к списку</a>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2/\">Перейти к списку</a>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -71,7 +71,7 @@ public class Create extends HttpServlet {
         
         request.setCharacterEncoding("UTF-8");
         if(updateLB.addEntry(request)) {
-            response.sendRedirect("http://localhost:26213/J200_HW_part2/viewlist2");
+            response.sendRedirect("http://localhost:26213/J200_HW_part2/");
         } else {
             processRequest(request, response);
 //            RequestDispatcher dispatcher = request.getRequestDispatcher("/error2");

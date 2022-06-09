@@ -18,7 +18,7 @@ import entity.Client;
  *
  * @author YuriPilshikov
  */
-@WebServlet(name = "ViewList", urlPatterns = {"/viewlist2"})
+@WebServlet(name = "ViewList", urlPatterns = {"/*"})
 public class ViewList extends HttpServlet {
     
     @EJB
@@ -47,6 +47,7 @@ public class ViewList extends HttpServlet {
             out.println("<th>Город</th>\n");
             out.println("<th>Улица</th>\n");
             out.println("<th>Дом</th>\n");
+            out.println("<th>Корпус</th>\n");
             out.println("<th>Квартира</th>\n");            
             out.println("<th>Примечание</th>\n");
             out.println("<th>Редактировать</th>\n");
@@ -61,8 +62,9 @@ public class ViewList extends HttpServlet {
                 out.println("<td>" + a.getCity() + "</td>\n");
                 out.println("<td>" + a.getStreet()+ "</td>\n");
                 out.println("<td>" + a.getNum() + "</td>\n");
-                out.println("<td>" + a.getFlat() + "</td>\n");
-                out.println("<td>" + a.getExtra() + " :: " + a.getIdaddress()  + "</td>\n");
+                out.println("<td>" + Objects.toString(a.getSubnum(), "") + "</td>\n");
+                out.println("<td>" + ((a.getFlat() == -1) ? "" : a.getFlat()) + "</td>\n");
+                out.println("<td>" + Objects.toString(a.getExtra(), "") + "</td>\n");
                out.println("<td><a href=\"http://localhost:26213/J200_HW_part2/update2?cid=" + a.getDevice().getIdclient() + "&aid=" + a.getIdaddress() + "\">" + "Редактировать" + "</a>"
                        + "<a href=\"http://localhost:26213/J200_HW_part2/delete2?cid=" + a.getDevice().getIdclient() + "&aid=" + a.getIdaddress() + "\">" + "Удалить" + "</a>"
                        + "</td></tr>");
@@ -82,8 +84,19 @@ public class ViewList extends HttpServlet {
             out.println("<label for=\"streetAndNum\">Улица и номер дома: </label><input type=\"text\" name=\"streetAndNum\" value=\"" + Objects.toString(request.getParameter("streetAndNum"), "") + "\" /><br><br>\n");
             out.println("<input type=\"submit\" value=\"ПРИМЕНИТЬ ФИЛЬТР\" /><br><br>\n");
             out.println("</form>\n");
-            out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
-            out.println("<a href=\"http://localhost:26213/J200_HW_part2\">Вернуться к EntryPoint</a>");                                                  
+            out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");            
+            out.println("<h1>УПРАВЛЕНИЕ БАЗОЙ</h1>\n");
+            out.println("<form action =\"create2\" method=\"POST\">\n");
+            out.println("<p>\n");
+            out.println("<input type=\"submit\" value=\"Создать новую запись устройства в базе данных\"/>\n");
+            out.println("</p>\n");
+            out.println("</form>");
+            out.println("<form action =\"addaddress2\" method=\"POST\">\n");
+            out.println("<p>\n");
+            out.println("<input type=\"submit\" value=\"Добавить адрес существующему устройству\"/>\n");
+            out.println("</p>\n");
+            out.println("</form>");
+            
             out.println("</body>");
             out.println("</html>");
         }

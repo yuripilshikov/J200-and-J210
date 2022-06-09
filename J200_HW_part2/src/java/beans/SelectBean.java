@@ -15,7 +15,9 @@ import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
 import entity.Address;
 import entity.Client;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 /**
  *
@@ -32,6 +34,7 @@ public class SelectBean implements SelectBeanLocal {
         return dbm.getAllClients();
     }
 
+    @Override
     public List<Address> getAllAddresses() {
         return dbm.getAllAddresses();
     }
@@ -40,35 +43,57 @@ public class SelectBean implements SelectBeanLocal {
     public List<Address> filter(HttpServletRequest request) {
         //List<Client> clients = getAllClients();
         List<Address> addresses = getAllAddresses();
-        String city = Objects.toString(request.getParameter("city"), "").trim();
+        String city = Objects.toString(request.getParameter("city"), "").trim().toLowerCase();
+
+//        String street = Objects.toString(tempAddress[0], "");
+//        int num = -1;
+//        if (tempAddress.length == 2) {
+//            try {
+//                num = Integer.parseInt(tempAddress[1]);
+//            } catch (NumberFormatException e) {
+//                num = -1;
+//            }
+//        }
         String streetAndNum = Objects.toString(request.getParameter("streetAndNum"), "").trim();
-        String[] tempAddress = streetAndNum.split("\\s");
-        String street = Objects.toString(tempAddress[0], "");
-        int num = -1;
-        if (tempAddress.length == 2) {
-            try {
-                num = Integer.parseInt(tempAddress[1]);
-            } catch (NumberFormatException e) {
-                num = -1;
+        if (streetAndNum.length() > 0) {
+            String[] tempAddress = streetAndNum.split("\\s");
+            List<Address> tempAddresses = new LinkedList<>();
+
+            for (Address a : addresses) {
+                String tempAddr = a.getStreet().toLowerCase() + a.getNum();
+                boolean test = true;
+                for (String s : tempAddress) {
+                    if (!tempAddr.contains(s.toLowerCase())) {
+                        test = false;
+                        break;
+                    }
+                }
+                if (test) {
+                    tempAddresses.add(a);
+                }
             }
+            addresses = new ArrayList<>(tempAddresses);
         }
 
-        List<Address> tempAddresses = new LinkedList<>();
-        for (Address a : addresses) {
-            if (!a.getCity().toLowerCase().contains(city.toLowerCase())) {
-                continue;
-            }
-            if (!a.getStreet().toLowerCase().contains(street.toLowerCase())) {
-                continue;
-            }
-            if (num > 0 && a.getNum() != num) {
-                continue;
-            }
-            tempAddresses.add(a);
+        if (city.length() > 0) {
+            List<Address> tempAddresses = new LinkedList<>();
+            for (Address a : addresses) {
 
+                if (a.getCity().toLowerCase().contains(city.toLowerCase())) {
+                    tempAddresses.add(a);
+                }
+            }
+//            if (!a.getStreet().toLowerCase().contains(street.toLowerCase())) {
+//                continue;
+//            }
+//            if (num > 0 && a.getNum() != num) {
+//                continue;
+//            }
+            
+
+            addresses = new ArrayList<>(tempAddresses);
         }
-        addresses = new ArrayList<>(tempAddresses);
-        return tempAddresses;
+        return addresses;
 
     }
 
@@ -81,6 +106,12 @@ public class SelectBean implements SelectBeanLocal {
             allCities.add(s);
         }
         Collections.sort(allCities);
+
+        // remove doubles
+        Set<String> set = new HashSet<>(allCities);
+        allCities.clear();
+        allCities.addAll(set);
+
         return allCities;
     }
 }

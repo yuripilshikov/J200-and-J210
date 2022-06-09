@@ -145,6 +145,7 @@ public class UpdateBean implements UpdateBeanLocal {
         
         if(!testClient || !testAddress) return false;
         
+        
         int num = 0;
         try {
             num = Integer.parseInt(numRaw);

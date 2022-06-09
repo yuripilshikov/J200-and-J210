@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import entity.Client;
+import java.util.Objects;
 
 /**
  *
@@ -54,16 +55,25 @@ public class AddAddress extends HttpServlet {
             }
             out.println("</select>\n");
             out.println("<br>\n");
-            out.println("<label for=\"city\">Город</label><input type=\"text\" name=\"city\" required/><br>\n");
-            out.println("<label for=\"street\">Улица</label><input type=\"text\" name=\"street\" required/><br>\n");
-            out.println("<label for=\"num\">Дом</label><input type=\"number\" name=\"num\" required/><br>\n");
-            out.println("<label for=\"subnum\">Корпус</label><input type=\"number\" name=\"subnum\"/><br>\n");
-            out.println("<label for=\"flat\">Квартира</label><input type=\"number\" name=\"flat\"/><br>\n");
-            out.println("<label for=\"extra\">Дополнительно</label><input type=\"text\" name=\"extra\"/><br>\n");
+            out.println("<label for=\"city\">Город</label><input type=\"text\" name=\"city\"   value=\"" + Objects.toString(request.getParameter("city"),"") + "\"  required/><br>\n");
+            out.println("<p style=\"color:red\">"+Objects.toString(request.getAttribute("cityValErrMsg"),"")+"</p><br>\n");
+            out.println("<label for=\"street\">Улица</label><input type=\"text\" name=\"street\"  value=\"" + Objects.toString(request.getParameter("street"),"") + "\"  required/><br>\n");
+            out.println("<p style=\"color:red\">"+Objects.toString(request.getAttribute("streetValErrMsg"),"")+"</p><br>\n");
+            out.println("<label for=\"num\">Дом</label><input type=\"number\" name=\"num\"   value=\"" + Objects.toString(request.getParameter("num"),"") + "\"  required/><br>\n");
+            out.println("<p style=\"color:red\">"+Objects.toString(request.getAttribute("numValErrMsg"),"")+"</p><br>\n");
+            out.println("<label for=\"subnum\">Корпус</label><input type=\"number\" name=\"subnum\"   value=\"" + Objects.toString(request.getParameter("subnum"),"") + "\"  /><br>\n");
+            out.println("<label for=\"flat\">Квартира</label><input type=\"number\" name=\"flat\"   value=\"" + Objects.toString(request.getParameter("flat"),"") + "\"  /><br>\n");
+            out.println("<label for=\"extra\">Дополнительно</label><input type=\"text\" name=\"extra\"   value=\"" + Objects.toString(request.getParameter("extra"),"") + "\"  /><br>\n");
+//            out.println("<label for=\"city\">Город</label><input type=\"text\" name=\"city\" required/><br>\n");
+//            out.println("<label for=\"street\">Улица</label><input type=\"text\" name=\"street\" required/><br>\n");
+//            out.println("<label for=\"num\">Дом</label><input type=\"number\" name=\"num\" required/><br>\n");
+//            out.println("<label for=\"subnum\">Корпус</label><input type=\"number\" name=\"subnum\"/><br>\n");
+//            out.println("<label for=\"flat\">Квартира</label><input type=\"number\" name=\"flat\"/><br>\n");
+//            out.println("<label for=\"extra\">Дополнительно</label><input type=\"text\" name=\"extra\"/><br>\n");
             out.println("<input type=\"submit\" value=\"ADD ADDRESS\"/> \n");
             out.println("</form>");
             out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
-            out.println("<a href=\"http://localhost:26213/J200_HW_part2/viewlist2\">Перейти к списку</a>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2/\">Перейти к списку</a>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -74,10 +84,11 @@ public class AddAddress extends HttpServlet {
             throws ServletException, IOException {        
         request.setCharacterEncoding("UTF-8");
         if (updateLB.addAddress(request)) {
-            response.sendRedirect("http://localhost:26213/J200_HW_part2/viewlist2");
+            response.sendRedirect("http://localhost:26213/J200_HW_part2/");
         } else {
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/error2");
-            dispatcher.forward(request, response);
+            processRequest(request, response);
+//            RequestDispatcher dispatcher = request.getRequestDispatcher("/error2");
+//            dispatcher.forward(request, response);
         }
     }
 
