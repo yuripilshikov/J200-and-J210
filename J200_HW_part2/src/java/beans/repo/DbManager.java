@@ -35,7 +35,6 @@ public class DbManager implements DbManagerLocal {
     public int persistClient(Client client) {
         em.persist(client);
         em.flush();
-        em.refresh(client);
         return client.getIdclient();
     }
 
@@ -43,22 +42,17 @@ public class DbManager implements DbManagerLocal {
     public int persistAddress(Address address) {
         em.persist(address);
         em.flush();
-        em.refresh(address);
         return address.getIdaddress();
     }
     
     @Override
     public Client getClientByID(int id) {
-        //return (Client) em.createNamed("Client.findByIdclient");
-        Client c = em.find(Client.class, id);
-        //System.out.println(c);
-        return c;        
+        return em.find(Client.class, id);        
     }
 
     @Override
     public Address getAddressByID(int id) {
-        Address a = em.find(Address.class, id);
-        return a;
+        return em.find(Address.class, id);
     }
 
     @Override
