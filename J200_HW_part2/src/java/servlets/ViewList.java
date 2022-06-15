@@ -31,9 +31,11 @@ public class ViewList extends HttpServlet {
         List<Address> addresses = selectLocal.filter(request);
         List<Client> clients = selectLocal.getAllClients();
         
-        Transformer t = new Transformer();
-        String xml = t.createXML(clients);
-        boolean isSaved = t.saveToXML(xml);
+        
+        //Transformer.createXML(clients);
+        Transformer.createXMLDOM(clients);
+        
+        
         
 
         response.setContentType("text/html;charset=UTF-8");
@@ -44,7 +46,6 @@ public class ViewList extends HttpServlet {
             out.println("<title>Servlet ViewList</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Статус сохранения в XML" + isSaved + "</h1>\n");
             out.println("<h1>Список клиентов и их адресов</h1>\n");
             out.println("<table border=\"1\">\n");
             out.println("<tr>\n");
