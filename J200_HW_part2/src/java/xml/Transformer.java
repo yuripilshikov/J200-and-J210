@@ -66,15 +66,18 @@ public class Transformer {
                 clientElement.setAttribute("id", String.valueOf(c.getIdclient()));
                 clientElement.setAttribute("type", c.getType());
                 clientElement.setAttribute("model", c.getModel());
+                clientElement.setAttribute("ip", c.getIp());
                 List<Address> addressList = c.getAddressList();
-                if(addressList != null && addressList.size() > 0) {
-                    Element addrElement = document.createElement("address");
+                if(addressList != null && addressList.size() > 0) {                    
                     for(Address a : addressList) {
+                        Element addrElement = document.createElement("address");
                         addrElement.setAttribute("id", String.valueOf(a.getIdaddress()));
                         addrElement.setAttribute("city", a.getCity());
                         addrElement.setAttribute("street", a.getStreet());
                         addrElement.setAttribute("num", String.valueOf(a.getNum()));
-                        ///
+                        addrElement.setAttribute("flat", String.valueOf(a.getFlat()));
+                        addrElement.setAttribute("subnum", String.valueOf(a.getSubnum()));
+                        addrElement.setAttribute("extra", a.getExtra());
                         clientElement.appendChild(addrElement);
                     }
                 }

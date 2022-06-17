@@ -12,8 +12,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import entity.Address;
-import entity.Client;
-import xml.Transformer;
 
 /**
  *
@@ -29,14 +27,6 @@ public class ViewList extends HttpServlet {
             throws ServletException, IOException {
 
         List<Address> addresses = selectLocal.filter(request);
-        List<Client> clients = selectLocal.getAllClients();
-        
-        
-        //Transformer.createXML(clients);
-        Transformer.createXMLDOM(clients);
-        
-        
-        
 
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
@@ -84,6 +74,7 @@ public class ViewList extends HttpServlet {
             out.println("<h2>ФИЛЬТР</h2>\n");
             out.println("<label for=\"city\">Город: </label>");
             out.println("<select name=\"city\">");
+            
             List<String> allCities = selectLocal.getAllCities();
             out.println("<option value=\"\"></option>");
             for (String s : allCities) {

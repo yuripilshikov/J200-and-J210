@@ -18,6 +18,9 @@ import entity.Client;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import xml.Transformer;
+import xml.dom.DemoDOM;
+import xml.sax.DemoSAX;
 
 /**
  *
@@ -114,4 +117,20 @@ public class SelectBean implements SelectBeanLocal {
 
         return allCities;
     }
+
+    @Override
+    public List<Client> getFliteredClients(String filterName) {        
+        Transformer.createXMLDOM(getAllClients());                
+        return DemoDOM.getClientsFromXMLDOM(filterName);
+    }
+
+    @Override
+    public List<Client> getFilteredClientsSAX(String filterName) {
+        Transformer.createXML(getAllClients());
+        return DemoSAX.getClientsFromXMLSAX(filterName);
+    }
+    
+    
+    
+    
 }

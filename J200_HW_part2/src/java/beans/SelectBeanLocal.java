@@ -13,10 +13,14 @@ import entity.Client;
 @Local
 public interface SelectBeanLocal {
     List<Client> getAllClients();
+    
+    List<Client> getFliteredClients(String filterName);
+    List<Client> getFilteredClientsSAX(String filterName);
     List<Address> getAllAddresses();
 //    Client getClient(HttpServletRequest request);
     List<Address> filter(HttpServletRequest request);
     
     
     List<String> getAllCities();
+    
 }

@@ -6,6 +6,7 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -50,6 +51,8 @@ public class Client implements Serializable {
     private String ip;
     @OneToMany(mappedBy = "device")
     private List<Address> addressList;
+    
+    private List<Address> tempAddressList = new ArrayList<>();
 
     public Client() {
     }
@@ -93,6 +96,14 @@ public class Client implements Serializable {
     @XmlTransient
     public List<Address> getAddressList() {
         return addressList;
+    }
+
+    public List<Address> getTempAddressList() {
+        return tempAddressList;
+    }
+    
+    public void addAddress(Address address) {
+        tempAddressList.add(address);
     }
 
     public void setAddressList(List<Address> addressList) {
