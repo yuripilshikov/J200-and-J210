@@ -17,7 +17,7 @@ import model.Client;
  * @author YuriPilshikov
  */
 @WebServlet(name = "Update", urlPatterns = {"/update"})
-public class Update extends HttpServlet {
+public class UpdateOld extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

@@ -54,7 +54,7 @@ public class ViewList extends HttpServlet {
             out.println("<th>Улица</th>\n");
             out.println("<th>Дом</th>\n");
             out.println("<th>Корпус</th>\n");
-            out.println("<th>Квартира</th>\n");
+            out.println("<th>Квартира</th>\n");            
             out.println("<th>Примечание</th>\n");
             out.println("</tr>\n");
             for (Client c : clients) {
@@ -182,12 +182,14 @@ public class ViewList extends HttpServlet {
         List<Client> tempClients = new LinkedList<>();
         for (Client c : clients) {
             List<Address> addresses = c.getAddresses();
+            boolean found = false;
             for (Address a : addresses) {
                 if(!a.getCity().toLowerCase().contains(city.toLowerCase())) continue;
                 if(!a.getStreet().toLowerCase().contains(street.toLowerCase())) continue;
                 if(num > 0 && a.getNum() != num) continue;
-                tempClients.add(c);
+                found = true;                
             }
+            tempClients.add(c);
         }    
         if(!tempClients.isEmpty()) clients = new ArrayList<>(tempClients);
         return clients;
