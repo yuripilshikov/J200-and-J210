@@ -1,10 +1,15 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package beans;
 
+import entities.Address;
+import entities.Client;
 import java.util.List;
 import javax.ejb.Local;
 import javax.servlet.http.HttpServletRequest;
-import entity.Address;
-import entity.Client;
 
 /**
  *
@@ -13,14 +18,8 @@ import entity.Client;
 @Local
 public interface SelectBeanLocal {
     List<Client> getAllClients();
-    
-    List<Client> getFliteredClients(String filterName);
-    List<Client> getFilteredClientsSAX(String filterName);
     List<Address> getAllAddresses();
-//    Client getClient(HttpServletRequest request);
     List<Address> filter(HttpServletRequest request);
     
-    
     List<String> getAllCities();
-    
 }

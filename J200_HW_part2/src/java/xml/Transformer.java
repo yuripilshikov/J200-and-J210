@@ -1,13 +1,23 @@
 package xml;
 
+import entity.Address;
 import entity.Client;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -15,36 +25,77 @@ import java.util.logging.Logger;
  */
 public class Transformer {
     
-    // divide to 2 methods:
-    // createXML - returns string with XML
-    // saveXML - saves XML to file
-
-    public String createXML(List<Client> clients) {
-        
-        // create text of the XML
-        StringBuilder sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        sb.append("<clients>");
+    public static final File xmlFile = new File("Clients.xml");
+    static {
+        if(!xmlFile.exists()) try {
+            xmlFile.createNewFile();
+        } catch (IOException ex) {
+            Logger.getLogger(Transformer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public static void createXML(List<Client> clients) {
+        StringBuilder sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        sb.append("<clients>\n");
         for (Client client : clients) {
             String entry = "<client id=\"" + client.getIdclient()
                     + "\" type=\"" + client.getType()
                     + "\" model=\"" + client.getModel()
-                    + "\" ip=\"" + client.getIp() + "\"/>";
+                    + "\" ip=\"" + client.getIp() + "\"/>\n";
             sb.append(entry);
         }
         sb.append("</clients>");
         
-        return sb.toString();
-    }
+        try(FileWriter writer = new FileWriter(xmlFile)) {
+            writer.write(sb.toString());
+        } catch (IOException ex) {
+            Logger.getLogger(Transformer.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+    }    
     
-    public boolean saveToXML(String xml) {
-        try (PrintWriter writer = new PrintWriter("d:\\test\\Clients.xml", "UTF-8")) {            
-            writer.println(xml); 
-            writer.close();
-        } catch (FileNotFoundException ex) {
-            return false;
-        } catch (UnsupportedEncodingException ex) {
-            return false;
+    public static void createXMLDOM(List<Client> clients) {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        
+        try {
+            DocumentBuilder db = factory.newDocumentBuilder();
+            Document document = db.newDocument();
+            Element root = document.createElement("clients");
+            document.appendChild(root);
+            for(Client c : clients) {
+                Element clientElement = document.createElement("client");
+                clientElement.setAttribute("id", String.valueOf(c.getIdclient()));
+                clientElement.setAttribute("type", c.getType());
+                clientElement.setAttribute("model", c.getModel());
+                clientElement.setAttribute("ip", c.getIp());
+                List<Address> addressList = c.getAddressList();
+                if(addressList != null && addressList.size() > 0) {                    
+                    for(Address a : addressList) {
+                        Element addrElement = document.createElement("address");
+                        addrElement.setAttribute("id", String.valueOf(a.getIdaddress()));
+                        addrElement.setAttribute("city", a.getCity());
+                        addrElement.setAttribute("street", a.getStreet());
+                        addrElement.setAttribute("num", String.valueOf(a.getNum()));
+                        addrElement.setAttribute("flat", String.valueOf(a.getFlat()));
+                        addrElement.setAttribute("subnum", String.valueOf(a.getSubnum()));
+                        addrElement.setAttribute("extra", a.getExtra());
+                        clientElement.appendChild(addrElement);
+                    }
+                }
+                root.appendChild(clientElement);
+            }
+            TransformerFactory tf = TransformerFactory.newInstance();
+            javax.xml.transform.Transformer t = tf.newTransformer();
+            DOMSource doms = new DOMSource(document);
+            StreamResult result = new StreamResult(xmlFile);
+            t.transform(doms, result);           
+            
+        } catch (ParserConfigurationException ex) {
+            Logger.getLogger(Transformer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (TransformerConfigurationException ex) {
+            Logger.getLogger(Transformer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (TransformerException ex) {
+            Logger.getLogger(Transformer.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return true;
+        
     }
 }

@@ -45,8 +45,9 @@ public class ClientParser extends DefaultHandler {
         }
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     }
-    
-    
-    
+
+    public List<Client> getClients() {
+        return clients;
+    }
     
 }

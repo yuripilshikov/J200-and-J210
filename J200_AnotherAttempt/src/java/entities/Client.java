@@ -3,10 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package entity;
+package entities;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -42,17 +41,18 @@ public class Client implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "IDCLIENT")
-    private Integer idclient;    
-    @Column(name = "TYPE", length = 100)
-    private String type;    
-    @Column(name = "MODEL", length = 100)
-    private String model;    
-    @Column(name = "IP", length = 25)
+    private Integer idclient;
+    @Size(max = 100)
+    @Column(name = "TYPE")
+    private String type;
+    @Size(max = 100)
+    @Column(name = "MODEL")
+    private String model;
+    @Size(max = 25)
+    @Column(name = "IP")
     private String ip;
     @OneToMany(mappedBy = "device")
     private List<Address> addressList;
-    
-    private List<Address> tempAddressList = new ArrayList<>();
 
     public Client() {
     }
@@ -98,14 +98,6 @@ public class Client implements Serializable {
         return addressList;
     }
 
-    public List<Address> getTempAddressList() {
-        return tempAddressList;
-    }
-    
-    public void addAddress(Address address) {
-        tempAddressList.add(address);
-    }
-
     public void setAddressList(List<Address> addressList) {
         this.addressList = addressList;
     }
@@ -132,7 +124,7 @@ public class Client implements Serializable {
 
     @Override
     public String toString() {
-        return "entity.Client[ idclient=" + idclient + " ]";
+        return "entities.Client[ idclient=" + idclient + " ]";
     }
     
 }

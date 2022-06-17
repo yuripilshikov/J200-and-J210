@@ -1,15 +1,18 @@
 package servlets;
 
-import beans.DemoDOMLocal;
-import beans.DemoSAXLocal;
+import beans.SelectBeanLocal;
+import entity.Address;
+import entity.Client;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import xml.dom.DemoDOM;
 
 /**
  *
@@ -19,13 +22,14 @@ import javax.servlet.http.HttpServletResponse;
 public class CheckDOM extends HttpServlet {
     
     @EJB
-    DemoDOMLocal demoDom;
+    SelectBeanLocal selectLocal;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         
-        demoDom.getClientsFromXMLDOM();
+        String filterName = request.getParameter("modelText");
+        List<Client> clients = selectLocal.getFliteredClients(filterName);
         
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
@@ -35,7 +39,24 @@ public class CheckDOM extends HttpServlet {
             out.println("<title>Servlet CheckDOM</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet CheckDOM at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Clients found:</h1>");
+            
+            if(clients != null && clients.size() > 0) {
+                for(Client c : clients) {
+                out.println("<p>" + c.getModel()+ " " + c.getType() + " " + c.getIp() + "</p>");
+                out.println("<p>Addresses:</p>");
+                List<Address> addresses = c.getTempAddressList();
+                if(addresses != null && addresses.size() > 0) {
+                    for(Address a : addresses) {
+                        out.println("<p>* " + a.getIdaddress() + a.getCity() + a.getStreet() + "</p>");
+                    }
+                }
+            }
+            } else {
+                out.println("<p>No client found!</p>");
+            }
+            out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2/\">Перейти к списку</a>");
             out.println("</body>");
             out.println("</html>");
         }

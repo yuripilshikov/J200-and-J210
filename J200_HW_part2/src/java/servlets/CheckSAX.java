@@ -5,11 +5,10 @@
  */
 package servlets;
 
-import beans.DemoSAXLocal;
+import beans.SelectBeanLocal;
 import entity.Client;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -26,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 public class CheckSAX extends HttpServlet {
     
     @EJB
-    DemoSAXLocal demoSax;
+    SelectBeanLocal selectLocal;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -37,10 +36,8 @@ public class CheckSAX extends HttpServlet {
         String model = request.getParameter("modelText");
         //List<Client> clients = new ArrayList<>();
         
-        demoSax.getClientsFromXMLSAX();
-        
-        
-        
+        List<Client> clients = selectLocal.getFilteredClientsSAX(model);
+
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
@@ -50,7 +47,17 @@ public class CheckSAX extends HttpServlet {
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Передана модель: " + model + "</h1>");
-            out.println("<p>Осуществляю поиск...</p>");
+            out.println("<p>" + clients.size() + "</p>");
+            
+            if(clients != null && clients.size() > 0) {
+                for(Client c : clients) {
+                out.println("<p>" + c.getModel()+ " " + c.getType() + " " + c.getIp() + "</p>");                
+            }
+            } else {
+                out.println("<p>No client found!</p>");
+            }
+            
+            
             
             out.println("</body>");
             out.println("</html>");
