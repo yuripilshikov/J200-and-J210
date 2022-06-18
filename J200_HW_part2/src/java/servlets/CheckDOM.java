@@ -20,38 +20,42 @@ import xml.dom.DemoDOM;
  */
 @WebServlet(name = "CheckDOM", urlPatterns = {"/CheckDOM"})
 public class CheckDOM extends HttpServlet {
-    
+
     @EJB
     SelectBeanLocal selectLocal;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
+
         String filterName = request.getParameter("modelText");
         List<Client> clients = selectLocal.getFliteredClients(filterName);
-        
+
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet CheckDOM</title>");            
+            out.println("<title>Servlet CheckDOM</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Clients found:</h1>");
-            
-            if(clients != null && clients.size() > 0) {
-                for(Client c : clients) {
-                out.println("<p>" + c.getModel()+ " " + c.getType() + " " + c.getIp() + "</p>");
-                out.println("<p>Addresses:</p>");
-                List<Address> addresses = c.getTempAddressList();
-                if(addresses != null && addresses.size() > 0) {
-                    for(Address a : addresses) {
-                        out.println("<p>* " + a.getIdaddress() + a.getCity() + a.getStreet() + "</p>");
+            out.println("<h1>Результаты поиска:</h1>");
+            out.println("<p>Найдено " + clients.size() + " клиентов, подходящих под параметры поиска (передано: \" " + filterName + " \")</p><br>");
+
+            if (clients != null && clients.size() > 0) {
+                out.println("<ol>");
+                for (Client c : clients) {
+                    out.println("<li>" + c.getModel() + " " + c.getType() + " " + c.getIp() + "</li>");
+
+                    List<Address> addresses = c.getTempAddressList();
+                    if (addresses != null && addresses.size() > 0) {
+                        out.println("<ul>");
+                        for (Address a : addresses) {
+                            out.println("<li>" + a.getIdaddress() + " " + a.getCity() + " " + a.getStreet() + "</li>");
+                        }
+                        out.println("</ul>");
                     }
                 }
-            }
+                out.println("</ol>");
             } else {
                 out.println("<p>No client found!</p>");
             }
