@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 public class DemoSAX {
 
     public static List<Client> getClientsFromXMLSAX(String filter) {
-        List<Client> clients = new ArrayList<>();
+        List<Client> clients;
         List<Client> filteredClients = new ArrayList<>();
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();

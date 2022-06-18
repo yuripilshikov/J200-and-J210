@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package servlets;
 
 import beans.SelectBeanLocal;
@@ -30,11 +25,8 @@ public class CheckSAX extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
-        // TODO: renew XML file
-        
+
         String model = request.getParameter("modelText");
-        //List<Client> clients = new ArrayList<>();
         
         List<Client> clients = selectLocal.getFilteredClientsSAX(model);
 
@@ -46,19 +38,20 @@ public class CheckSAX extends HttpServlet {
             out.println("<title>Servlet CheckSAX</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Передана модель: " + model + "</h1>");
-            out.println("<p>" + clients.size() + "</p>");
+            out.println("<h1>Результаты поиска:</h1>");
+            out.println("<p>Найдено " + clients.size() + " клиентов, подходящих под параметры поиска (передано: \" " + model + " \")</p>");
             
             if(clients != null && clients.size() > 0) {
+                out.println("<ul>");
                 for(Client c : clients) {
-                out.println("<p>" + c.getModel()+ " " + c.getType() + " " + c.getIp() + "</p>");                
-            }
+                out.println("<li>" + c.getModel()+ " " + c.getType() + " " + c.getIp() + "</li>");                
+                }
+                out.println("</ul>");
             } else {
                 out.println("<p>No client found!</p>");
-            }
-            
-            
-            
+            }            
+            out.println("<input type=\"button\" onclick=\"history.back();\" value=\"Назад\"/><br>");
+            out.println("<a href=\"http://localhost:26213/J200_HW_part2/\">Перейти к списку</a>");
             out.println("</body>");
             out.println("</html>");
         }
