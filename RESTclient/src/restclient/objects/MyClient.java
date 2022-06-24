@@ -15,7 +15,7 @@ import java.util.List;
 public class MyClient {
     private int id;
     private String type, model, ip;
-    List<Address> addressList;
+    List<Address> addressList = new ArrayList<>();
 
 
     public List<Address> getAddressList() {
@@ -61,6 +61,12 @@ public class MyClient {
     public void setIp(String ip) {
         this.ip = ip;
     }
+
+    @Override
+    public String toString() {
+        return id + ". " + type + " " + model + " : " + ip + ". Has " + addressList.size() + " addr.";
+    }
+    
     
     
 }

@@ -68,6 +68,11 @@ public class Address {
     public void setExtra(String extra) {
         this.extra = extra;
     }
+
+    @Override
+    public String toString() {
+        return "Address{" + "id=" + id + ", num=" + num + ", flat=" + flat + ", subnum=" + subnum + ", city=" + city + ", street=" + street + ", extra=" + extra + '}';
+    }
     
     
     

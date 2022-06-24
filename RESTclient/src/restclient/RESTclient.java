@@ -1,20 +1,19 @@
 package restclient;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import restclient.objects.Address;
 import restclient.objects.MyClient;
@@ -25,91 +24,131 @@ import restclient.objects.MyClient;
  */
 public class RESTclient {
 
-    public static void main(String[] args) {
-        MyClientClient clientClient = new MyClientClient();
-        MyAddressClient addressClient = new MyAddressClient();
-        
-        List<MyClient> clients = new ArrayList<>();
+    MyClientClient clientClient = new MyClientClient();
+    MyAddressClient addressClient = new MyAddressClient();
+    //List<MyClient> clients = new ArrayList<>();
+
+    public List<MyClient> readXML() {
         String xml = clientClient.findAll(String.class);
-        System.out.println(xml);
+        return xmlParseClient(xml);
+    }
+
+    public MyClientClient getClientClient() {
+        return clientClient;
+    }
+
+    public MyAddressClient getAddressClient() {
+        return addressClient;
+    }
+
+    MyClient findClient(int number) {
+        String xml = clientClient.find(String.class, String.valueOf(number));
+        List<MyClient> clients = xmlParseClient(xml);
+        return clients.get(0);
+
+    }
+
+    Address findAddress(int number) {
+        String xml = addressClient.find(String.class, String.valueOf(number));
+
+        // It is a good idea to move it to another method... but I don't have enough time...
+        Address address = new Address();
 
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-//            File file = new File("tempXML.xml");
-//            file.createNewFile();
-//            FileWriter fw = new FileWriter(file);
-//            fw.write(xml);
-//            fw.close();
-            
+            Document document = builder.parse(new InputSource(new StringReader(xml)));
+            NodeList clientsElements = document.getElementsByTagName("address");
+            for (int i = 0; i < clientsElements.getLength(); i++) {
+                Node addressNode = clientsElements.item(i);
+                NodeList addressSubNodes = addressNode.getChildNodes();
+
+                    for (int k = 0; k < addressSubNodes.getLength(); k++) {
+                        if (addressSubNodes.item(k).getNodeName().equals("city")) {
+                            address.setCity(addressSubNodes.item(k).getTextContent());
+                        } else if (addressSubNodes.item(k).getNodeName().equals("extra")) {
+                            address.setExtra(addressSubNodes.item(k).getTextContent());
+                        } else if (addressSubNodes.item(k).getNodeName().equals("flat")) {
+                            address.setFlat(Integer.parseInt(addressSubNodes.item(k).getTextContent()));
+                        } else if (addressSubNodes.item(k).getNodeName().equals("idaddress")) {
+                            address.setId(Integer.parseInt(addressSubNodes.item(k).getTextContent()));
+                        } else if (addressSubNodes.item(k).getNodeName().equals("num")) {
+                            address.setNum(Integer.parseInt(addressSubNodes.item(k).getTextContent()));
+                        } else if (addressSubNodes.item(k).getNodeName().equals("street")) {
+                            address.setStreet(addressSubNodes.item(k).getTextContent());
+                        } else if (addressSubNodes.item(k).getNodeName().equals("subnum")) {
+                            address.setSubnum(Integer.parseInt(addressSubNodes.item(k).getTextContent()));
+                        }
+                    }
+
+                
+            }
+
+        } catch (SAXException ex) {
+            Logger.getLogger(RESTclient.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(RESTclient.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ParserConfigurationException ex) {
+            Logger.getLogger(RESTclient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return address;
+    }
+
+    List<MyClient> xmlParseClient(String xml
+    ) {
+        List<MyClient> clients = new ArrayList<>();
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+
             // СЮДА МОЖНО ПЕРЕДАТЬ URI
-            Document document = builder.parse("http://localhost:26213/J200_HW_part2/webresources/client");
-            
-            //document.getDocumentElement().normalize();
-            System.out.println("Root element: " + document.getDocumentElement().getNodeName());
-            //NodeList clientsElements = document.getDocumentElement().getElementsByTagName("client");
-            System.out.println(document.getDocumentElement().getChildNodes().toString());
-            
+            //Document document = builder.parse("http://localhost:26213/J200_HW_part2/webresources/client");
+            Document document = builder.parse(new InputSource(new StringReader(xml)));
             NodeList clientsElements = document.getElementsByTagName("client");
-            
 
             for (int i = 0; i < clientsElements.getLength(); i++) {
                 Node myClientNode = clientsElements.item(i);
-                //NamedNodeMap attributes = myClientNode.getAttributes();
                 NodeList childNodeList = myClientNode.getChildNodes();
-                int id;
-                String model, ip, type;
-                for(int j = 0; j < childNodeList.getLength(); j++) {
-                    System.out.println(childNodeList.item(0).getNodeName());
-                    
-                }
-               
 
                 MyClient c = new MyClient();
-//                System.out.println(attributes.getNamedItem("type"));
-//                System.out.println(attributes.getNamedItem("model"));
-//                System.out.println(attributes.getNamedItem("ip"));
-                //c.setType(attributes.getNamedItem("type").getNodeValue());
-                //c.setModel(attributes.getNamedItem("model").getNodeValue());
-                //c.setIp(attributes.getNamedItem("ip").getNodeValue());
 
-                NodeList addrList = myClientNode.getChildNodes();
-                for (int j = 0; j < addrList.getLength(); j++) {
-                    Node childNode = addrList.item(j);
-                    if (childNode.getNodeType() == Node.ELEMENT_NODE) {
-                        Element tempAddrElem = (Element) childNode;
-                        Address address = new Address();
-                        
-//                        System.out.println(tempAddrElem.getAttribute("city"));
-//                        address.setId(Integer.parseInt(tempAddrElem.getAttribute("id")));
-//                        address.setCity(tempAddrElem.getAttribute("city"));
-//                        address.setStreet(tempAddrElem.getAttribute("street"));
-//
-//                        try {
-//                            address.setNum(Integer.parseInt(tempAddrElem.getAttribute("num")));
-//                        } catch (NumberFormatException e) {
-//                            address.setNum(-1);
-//                        }
-//
-//                        try {
-//                            address.setFlat(Integer.parseInt(tempAddrElem.getAttribute("flat")));
-//                        } catch (NumberFormatException e) {
-//                            address.setFlat(-1);
-//                        }
-//
-//                        try {
-//                            address.setSubnum(Integer.parseInt(tempAddrElem.getAttribute("subnum")));
-//                        } catch (NumberFormatException e) {
-//                            address.setSubnum(-1);
-//                        }
-//
-//                        address.setExtra(tempAddrElem.getAttribute("extra"));
-//                        c.addAddress(address);
+                for (int j = 0; j < childNodeList.getLength(); j++) {
+                    // check by name and add to variables
+                    if (childNodeList.item(j).getNodeName().equals("idclient")) {
+                        c.setId(Integer.parseInt(childNodeList.item(j).getTextContent()));
+                    } else if (childNodeList.item(j).getNodeName().equals("ip")) {
+                        c.setIp(childNodeList.item(j).getTextContent());
+                    } else if (childNodeList.item(j).getNodeName().equals("model")) {
+                        c.setModel(childNodeList.item(j).getTextContent());
+                    } else if (childNodeList.item(j).getNodeName().equals("type")) {
+                        c.setType(childNodeList.item(j).getTextContent());
+                    } else if (childNodeList.item(j).getNodeName().equals("addressList")) {
+                        // process address and add it to addressList
+                        Address a = new Address();
+                        NodeList addressNodeList = childNodeList.item(j).getChildNodes();
+                        // check by name and add to address properties
+                        for (int k = 0; k < addressNodeList.getLength(); k++) {
+                            if (addressNodeList.item(k).getNodeName().equals("city")) {
+                                a.setCity(addressNodeList.item(k).getTextContent());
+                            } else if (addressNodeList.item(k).getNodeName().equals("extra")) {
+                                a.setExtra(addressNodeList.item(k).getTextContent());
+                            } else if (addressNodeList.item(k).getNodeName().equals("flat")) {
+                                a.setFlat(Integer.parseInt(addressNodeList.item(k).getTextContent()));
+                            } else if (addressNodeList.item(k).getNodeName().equals("idaddress")) {
+                                a.setId(Integer.parseInt(addressNodeList.item(k).getTextContent()));
+                            } else if (addressNodeList.item(k).getNodeName().equals("num")) {
+                                a.setNum(Integer.parseInt(addressNodeList.item(k).getTextContent()));
+                            } else if (addressNodeList.item(k).getNodeName().equals("street")) {
+                                a.setStreet(addressNodeList.item(k).getTextContent());
+                            } else if (addressNodeList.item(k).getNodeName().equals("subnum")) {
+                                a.setSubnum(Integer.parseInt(addressNodeList.item(k).getTextContent()));
+                            }
+                        }
+                        c.addAddress(a);
                     }
                 }
-
                 clients.add(c);
-
             }
 
         } catch (ParserConfigurationException ex) {
@@ -119,11 +158,16 @@ public class RESTclient {
         } catch (IOException ex) {
             Logger.getLogger(RESTclient.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        for (MyClient c : clients) {
-//            System.out.println(c);
-        }
-
+        return clients;
+    }
+    
+    void deleteClient(int id) {
+        clientClient.remove(String.valueOf(id));
+        
+    }
+    
+    void deleteAddress(int id) {
+        addressClient.remove(String.valueOf(id));
     }
 
 }
