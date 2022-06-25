@@ -6,17 +6,19 @@
 package restclient;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
@@ -34,23 +36,29 @@ public class MainSWING extends JFrame {
     
     JLabel selectedItemLabel;
     JTextField clientNumber, addressNumber;
-    JButton clientFind, addressFind, clientDelete, addressDelete;
+    JButton clientFind, addressFind, clientDelete, addressDelete, refresh;
     JTextArea clientFound, addressFound;
     
-    DefaultListModel<MyClient> clientList;
-    JList list;
+    DefaultListModel<MyClient> clientListModel;
+    JList listOfClients;
+    
+    DefaultListModel<Address> addressListModel;
+    JList listOfAddresses;
     
     List<MyClient> clients;
+    List<Address> addresses;
 
     public MainSWING() {
         super("REST Client");
-        setBounds(300, 200, 800, 600);
+        setBounds(300, 200, 1200, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         //setLayout(new FlowLayout());
 
         restclient = new RESTclient();        
+        //restclient.runSomeTests();
         clients = restclient.readXML();
-        selectedItemLabel = new JLabel();
+        addresses = restclient.getAllAddresses();
+        selectedItemLabel = new JLabel("...");
         
         clientNumber = new JTextField();
         clientFind = new JButton("Find client");
@@ -63,37 +71,67 @@ public class MainSWING extends JFrame {
         clientDelete = new JButton("Delete client");
         addressDelete = new JButton("Delete address");
 
-        clientList = new DefaultListModel<>();
+        clientListModel = new DefaultListModel<>();
         for(MyClient c : clients) {
-            clientList.addElement(c);
+            clientListModel.addElement(c);
         }
         
-        list = new JList(clientList);
-        add(list, BorderLayout.WEST);
+        addressListModel = new DefaultListModel<>();
+        for(Address a : addresses) {
+            addressListModel.addElement(a);
+        }       
         
-        list.addListSelectionListener(new ListSelectionListener() {
+        
+        listOfClients = new JList(clientListModel);
+        listOfAddresses = new JList(addressListModel);
+        
+        JPanel listsPanel = new JPanel();
+        listsPanel.setLayout(new BoxLayout(listsPanel, BoxLayout.Y_AXIS));
+        listsPanel.add(new JLabel("Clients"));
+        listsPanel.add(listOfClients);
+        listsPanel.add(new JLabel("Addresses"));
+        listsPanel.add(listOfAddresses);      
+        
+        
+        refresh = new JButton("Refresh");
+        refresh.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateLists();
+            }
+        });
+        listsPanel.add(refresh);
+        listsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        
+        add(listsPanel, BorderLayout.WEST);
+        
+        listOfClients.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                selectedItemLabel.setText("Selected: " + list.getSelectedIndex() + " " + list.getSelectedValue());
+                selectedItemLabel.setText("Selected: " + listOfClients.getSelectedIndex() + " " + listOfClients.getSelectedValue());
             }
         });
         
-        //JLabel label = new JLabel("" + list.getSelectedIndex());
         add(selectedItemLabel, BorderLayout.NORTH);
         
         
         // Find item by ID
         JPanel findIdPanel = new JPanel();
-        findIdPanel.setLayout(new FlowLayout());
-        findIdPanel.add(new JLabel("Find client by ID"));
-        findIdPanel.add(clientNumber);
+        findIdPanel.setLayout(new BoxLayout(findIdPanel, BoxLayout.Y_AXIS));
+        
+        JPanel findClientPanel = new JPanel();        
+        findClientPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        
+        findClientPanel.setLayout(new FlowLayout());
+        findClientPanel.add(new JLabel("Find client by ID"));
+        findClientPanel.add(clientNumber);
         clientNumber.setColumns(5);
-        findIdPanel.add(clientFind);
-        findIdPanel.add(clientDelete);
-        findIdPanel.add(clientFound);
+        findClientPanel.add(clientFind);
+        findClientPanel.add(clientDelete);
+        findClientPanel.add(clientFound);
         clientFound.setLineWrap(true);
         clientFound.setColumns(35);
-        
+        findIdPanel.add(findClientPanel);
         
         clientFind.addActionListener(new ActionListener() {
             @Override
@@ -105,6 +143,10 @@ public class MainSWING extends JFrame {
                     id = -1;
                 }
                 MyClient foundClient = restclient.findClient(id);
+                if(foundClient == null) {
+                    clientFound.setText("NOT FOUND");
+                    return;
+                }
                 StringBuilder sb = new StringBuilder("Found: ");
                 sb.append(foundClient.toString()).append(".\n");
                 for(Address a : foundClient.getAddressList()) {
@@ -124,22 +166,27 @@ public class MainSWING extends JFrame {
                     id = -1;
                 }
                 restclient.deleteClient(id);
-                updateList();
+                updateLists();
             }
         });
 
           
         
         // find address
-        findIdPanel.add(new JLabel("Find address by ID"));
-        findIdPanel.add(addressNumber);
+        JPanel findAddressPanel = new JPanel();
+        findAddressPanel.setLayout(new FlowLayout());
+        findAddressPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        
+        findAddressPanel.add(new JLabel("Find address by ID"));
+        findAddressPanel.add(addressNumber);
         addressNumber.setColumns(5);
-        findIdPanel.add(addressFind);
-        findIdPanel.add(addressDelete);
-        findIdPanel.add(addressFound);
+        findAddressPanel.add(addressFind);
+        findAddressPanel.add(addressDelete);
+        findAddressPanel.add(addressFound);
         addressFound.setLineWrap(true);
         addressFound.setColumns(35);
         
+        findIdPanel.add(findAddressPanel);
         
         addressFind.addActionListener(new ActionListener() {
             @Override
@@ -151,6 +198,10 @@ public class MainSWING extends JFrame {
                     id = -1;
                 }
                 Address foundAddress = restclient.findAddress(id);
+                if(foundAddress == null) {
+                    addressFound.setText("NOT FOUND");
+                    return;
+                }
                 addressFound.setText(foundAddress.toString());
             }
         });
@@ -165,20 +216,25 @@ public class MainSWING extends JFrame {
                     id = -1;
                 }
                 restclient.deleteAddress(id);
+                updateLists();
             }
         });
-        
-        // update list
         
         add(findIdPanel);      
     }
     
-    private void updateList() {
+    private void updateLists() {
         clients = restclient.readXML();
-        clientList.clear();
+        clientListModel.clear();
         for(MyClient c : clients) {
-            clientList.addElement(c);
+            clientListModel.addElement(c);
         }        
+        
+        addresses = restclient.getAllAddresses();
+        addressListModel.clear();
+        for(Address a : addresses) {
+            addressListModel.addElement(a);
+        }  
     }   
 
     public static void main(String[] args) {
