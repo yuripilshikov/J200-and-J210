@@ -93,7 +93,7 @@ public class Client implements Serializable {
         this.ip = ip;
     }
 
-    @XmlTransient
+    //@XmlTransient
     public List<Address> getAddressList() {
         return addressList;
     }
